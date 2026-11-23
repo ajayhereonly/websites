@@ -3,174 +3,884 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajay — Mechanical Engineer</title>
+    <title>Mehrangarh Fort • The Citadel of the Sun | Jodhpur, Rajasthan</title>
+    <meta name="description" content="Immerse yourself in Mehrangarh Fort, Jodhpur: an interactive 3D virtual tour, palace galleries, royal history, legendary lore, and ticket booking.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Three.js & OrbitControls from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- GSAP for Smooth Cinematic Transitions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 </head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="#" class="nav-logo">Ajay</a>
-            <ul class="nav-links">
-                <li><a href="#about">About</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="#achievements">Achievements</a></li>
-                <li><a href="#education">Education</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </div>
-    </nav>
+<body class="theme-dusk">
 
-    <!-- Hero Section -->
-    <section class="hero" id="about">
-        <div class="hero-content">
-            <div class="hero-text">
-                <p class="greeting">Hello, I'm</p>
-                <h1 class="name">Ajay</h1>
-                <h2 class="title">Mechanical Engineer</h2>
-                <p class="summary">
-                    A driven Mechanical Engineer with a B.Tech degree, combining core engineering expertise 
-                    with modern tech skills in AutoCAD and Python. Proven discipline and aptitude — cleared the 
-                    AFCAT examination <strong>3 times</strong>, demonstrating exceptional dedication and consistency.
-                </p>
-                <div class="hero-buttons">
-                    <a href="#contact" class="btn btn-primary">Get in Touch</a>
-                    <a href="https://github.com/ajayhereonly" target="_blank" class="btn btn-outline">
-                        <i class="fab fa-github"></i> GitHub
-                    </a>
-                </div>
+    <!-- Royal Rajasthani Preloader -->
+    <div id="preloader" class="preloader">
+        <div class="preloader-content">
+            <div class="royal-crest-glow">
+                <i class="fas fa-sun crest-icon"></i>
             </div>
-            <div class="hero-visual">
-                <div class="avatar-circle">
-                    <span class="avatar-initials">A</span>
-                </div>
+            <h1 class="preloader-title">MEHRANGARH</h1>
+            <p class="preloader-sub">The Citadel of the Sun • 1459 AD</p>
+            <div class="loading-bar-wrap">
+                <div class="loading-bar-progress" id="loadProgress"></div>
             </div>
+            <span class="loading-status" id="loadStatus">Summoning the Desert Citadel...</span>
         </div>
-    </section>
+    </div>
 
-    <!-- Skills Section -->
-    <section class="section" id="skills">
-        <div class="container">
-            <h2 class="section-title">Skills</h2>
-            <div class="skills-grid">
-                <div class="skill-card">
-                    <div class="skill-icon"><i class="fas fa-drafting-compass"></i></div>
-                    <h3>AutoCAD</h3>
-                    <p>Proficient in 2D/3D mechanical design, drafting, and modeling using AutoCAD.</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon"><i class="fab fa-python"></i></div>
-                    <h3>Python</h3>
-                    <p>Programming and scripting with Python for automation, data analysis, and engineering solutions.</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon"><i class="fas fa-cogs"></i></div>
-                    <h3>Mechanical Engineering</h3>
-                    <p>Strong foundation in thermodynamics, fluid mechanics, manufacturing, and machine design.</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon"><i class="fas fa-tools"></i></div>
-                    <h3>Problem Solving</h3>
-                    <p>Analytical thinking and systematic approach to engineering challenges.</p>
-                </div>
-            </div>
+    <!-- Top Announcement Strip -->
+    <div class="top-announcement">
+        <div class="container announcement-inner">
+            <span><i class="fas fa-clock"></i> <strong>Citadel Timings Today:</strong> 9:00 AM – 5:00 PM IST</span>
+            <span class="dot-sep">•</span>
+            <span><i class="fas fa-sun"></i> <strong>Jodhpur:</strong> 29°C Clear Skies (The Blue City)</span>
+            <span class="dot-sep">•</span>
+            <a href="#tickets" class="announce-link"><i class="fas fa-ticket-alt"></i> Book Online Passes (Skip Entry Queue) &rarr;</a>
         </div>
-    </section>
+    </div>
 
-    <!-- Achievements Section -->
-    <section class="section section-alt" id="achievements">
-        <div class="container">
-            <h2 class="section-title">Achievements</h2>
-            <div class="achievements-container">
-                <div class="achievement-card featured">
-                    <div class="achievement-badge">
-                        <i class="fas fa-fighter-jet"></i>
+    <!-- Navigation Header -->
+    <header class="site-header" id="header">
+        <div class="header-inner container">
+            <a href="#" class="brand-logo">
+                <div class="logo-emblem">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">MEHRANGARH</span>
+                    <span class="brand-tagline">JODHPUR • RAJASTHAN</span>
+                </div>
+            </a>
+
+            <nav class="main-nav" id="mainNav">
+                <ul class="nav-menu">
+                    <li><a href="#hero" class="nav-link active">Home</a></li>
+                    <li><a href="#virtual-tour" class="nav-link"><i class="fas fa-cube"></i> 3D Citadel Tour</a></li>
+                    <li><a href="#palaces" class="nav-link">Palaces & Museum</a></li>
+                    <li><a href="#timeline" class="nav-link">Rathore History</a></li>
+                    <li><a href="#legends" class="nav-link">Legends & Lore</a></li>
+                    <li><a href="#visit" class="nav-link">Plan Visit</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-actions">
+                <!-- Royal Ambient Audio Synthesizer Toggle -->
+                <button id="audioToggleBtn" class="action-btn audio-btn" title="Toggle Rajasthani Desert Ambient Soundscape">
+                    <i class="fas fa-volume-xmark" id="audioIcon"></i>
+                    <span class="btn-label">Royal Audio</span>
+                    <div class="sound-wave" id="soundWave">
+                        <span></span><span></span><span></span><span></span>
                     </div>
-                    <h3>AFCAT — Cleared 3 Times</h3>
-                    <p>
-                        Successfully cleared the Air Force Common Admission Test (AFCAT) on <strong>3 separate occasions</strong>, 
-                        conducted by the Indian Air Force for officer-level recruitment. This demonstrates strong aptitude 
-                        in general awareness, verbal ability, numerical ability, and reasoning & military aptitude.
-                    </p>
-                    <div class="achievement-tags">
-                        <span class="tag">Indian Air Force</span>
-                        <span class="tag">Defence</span>
-                        <span class="tag">Competitive Exam</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                </button>
 
-    <!-- Education Section -->
-    <section class="section" id="education">
-        <div class="container">
-            <h2 class="section-title">Education</h2>
-            <div class="education-timeline">
-                <div class="edu-card">
-                    <div class="edu-icon"><i class="fas fa-graduation-cap"></i></div>
-                    <div class="edu-content">
-                        <h3>B.Tech — Mechanical Engineering</h3>
-                        <p class="edu-detail">Bachelor of Technology in Mechanical Engineering</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                <!-- Day / Dusk / Night 3D Lighting Selector -->
+                <button id="lightingToggleBtn" class="action-btn lighting-btn" title="Switch Citadel Lighting (Day / Sunset / Blue City Night)">
+                    <i class="fas fa-moon" id="lightingIcon"></i>
+                    <span class="btn-label" id="lightingLabel">Dusk</span>
+                </button>
 
-    <!-- Contact Section -->
-    <section class="section section-alt" id="contact">
-        <div class="container">
-            <h2 class="section-title">Get in Touch</h2>
-            <p class="contact-text">
-                Interested in working together or have a question? Feel free to reach out!
-            </p>
-            <div class="contact-links">
-                <a href="https://github.com/ajayhereonly" target="_blank" class="contact-card">
-                    <i class="fab fa-github"></i>
-                    <span>GitHub</span>
-                    <span class="contact-handle">@ajayhereonly</span>
+                <!-- Book Pass Button -->
+                <a href="#tickets" class="btn btn-royal-gold nav-cta">
+                    <i class="fas fa-ticket"></i> Book E-Pass
                 </a>
+
+                <button class="mobile-toggle" id="mobileNavToggle" aria-label="Toggle Menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section with Background Atmosphere -->
+    <section class="hero-section" id="hero">
+        <div class="hero-bg-overlay"></div>
+        <div class="hero-particles" id="heroParticles"></div>
+        
+        <div class="container hero-container">
+            <div class="hero-badge">
+                <i class="fas fa-crown"></i> Seat of the Rathore Dynasty • Rao Jodha 1459
+            </div>
+
+            <h1 class="hero-headline">
+                <span class="sub-head">The Majestic Stronghold of Marwar</span>
+                <span class="main-title">MEHRANGARH</span>
+                <span class="accent-title">CITADEL OF THE SUN</span>
+            </h1>
+
+            <p class="hero-description">
+                Perched 410 feet above the legendary indigo rooftops of Jodhpur, Mehrangarh stands as one of India's 
+                largest and most impregnable royal fortresses. Experience the sheer cliff-hewn battlements, intricate sandstone 
+                jharokhas, and opulent palaces through an immersive 3D virtual tour.
+            </p>
+
+            <div class="hero-cta-group">
+                <a href="#virtual-tour" class="btn btn-primary-royal" id="explore3dBtn">
+                    <i class="fas fa-compass fa-spin-pulse"></i> Enter 3D Citadel Tour
+                </a>
+                <a href="#tickets" class="btn btn-secondary-sand">
+                    <i class="fas fa-qrcode"></i> Get Instant E-Pass
+                </a>
+                <button class="btn btn-glass" id="heroAudioPrompt">
+                    <i class="fas fa-music"></i> Play Desert Soundscape
+                </button>
+            </div>
+
+            <div class="hero-stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">1459</span>
+                    <span class="stat-label">Year Founded by Rao Jodha</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">410 <small>ft</small></span>
+                    <span class="stat-label">Elevation Above Blue City</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">7</span>
+                    <span class="stat-label">Monumental Victory Gates</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">250,000+</span>
+                    <span class="stat-label">Square Feet of Palaces</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="scroll-down-hint">
+            <span>Scroll to Explore Citadel</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- SECTION: 3D VIRTUAL CITADEL TOUR -->
+    <section class="tour-section" id="virtual-tour">
+        <div class="container tour-header-wrap">
+            <div class="section-tag"><i class="fas fa-cube"></i> Interactive 3D WebGL Experience</div>
+            <h2 class="section-heading">Explore the Fortress in 3D</h2>
+            <p class="section-lead">
+                Navigate the towering cliffs, royal palatial complexes, and heavy cannon ramparts overlooking the Blue City. 
+                Rotate, zoom, and select key landmark beacons to fly camera to historical spots.
+            </p>
+        </div>
+
+        <div class="tour-viewport-container container">
+            <!-- 3D Canvas element -->
+            <div id="threejs-canvas-wrapper" class="canvas-wrapper">
+                <canvas id="citadel3dCanvas"></canvas>
+                
+                <!-- 3D Viewport HUD Overlay -->
+                <div class="hud-top-bar">
+                    <div class="hud-location-badge">
+                        <i class="fas fa-crosshairs"></i>
+                        <span id="currentHotspotName">Citadel Overview (Bhakurcheeria Hill)</span>
+                    </div>
+
+                    <div class="hud-atmosphere-controls">
+                        <button class="atmos-btn active" data-time="sunset" title="Golden Hour Sunset">
+                            <i class="fas fa-sun"></i> Sunset
+                        </button>
+                        <button class="atmos-btn" data-time="day" title="Bright Desert Day">
+                            <i class="fas fa-cloud-sun"></i> Daylight
+                        </button>
+                        <button class="atmos-btn" data-time="night" title="Blue City Night">
+                            <i class="fas fa-moon"></i> Night
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3D Viewpoint Selectors -->
+                <div class="hud-viewpoints-panel">
+                    <span class="viewpoints-title"><i class="fas fa-map-pin"></i> Guided Waypoints</span>
+                    <div class="viewpoint-buttons">
+                        <button class="vp-btn active" data-cam="overview">
+                            <i class="fas fa-globe-asia"></i> Full Citadel
+                        </button>
+                        <button class="vp-btn" data-cam="ramparts">
+                            <i class="fas fa-bomb"></i> Kilkila Cannon Ramparts
+                        </button>
+                        <button class="vp-btn" data-cam="phoolmahal">
+                            <i class="fas fa-gem"></i> Phool & Sheesh Mahal
+                        </button>
+                        <button class="vp-btn" data-cam="lohapol">
+                            <i class="fas fa-shield-halved"></i> Loha Pol (Iron Gate)
+                        </button>
+                        <button class="vp-btn" data-cam="bluecity">
+                            <i class="fas fa-city"></i> Blue City Panorama
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Hotspot Modal/Card inside HUD -->
+                <div class="hud-info-card" id="hudInfoCard">
+                    <button class="card-close" id="hudCardClose" aria-label="Close details">&times;</button>
+                    <div class="card-badge" id="hudCardTag">Landmark Highlight</div>
+                    <h3 class="card-title" id="hudCardTitle">Kilkila Cannon & Ramparts</h3>
+                    <p class="card-text" id="hudCardDesc">
+                        Resting upon the high southern ramparts, the formidable bronze Kilkila cannon was captured from the Mughal armies 
+                        under Maharaja Ajit Singh. From this battery, the entire sun-drenched expanse of Jodhpur unfolds below.
+                    </p>
+                    <div class="card-facts" id="hudCardFacts">
+                        <span><i class="fas fa-ruler-combined"></i> Range: 4+ Miles</span>
+                        <span><i class="fas fa-calendar-check"></i> Cast: 18th Century</span>
+                    </div>
+                    <button class="btn btn-sm btn-gold" id="hudAudioGuideBtn">
+                        <i class="fas fa-headphones"></i> Listen to Audio Lore
+                    </button>
+                </div>
+
+                <!-- 3D Control Hints -->
+                <div class="hud-instructions">
+                    <span><i class="fas fa-computer-mouse"></i> Left Click + Drag to Orbit</span>
+                    <span><i class="fas fa-arrows-up-down"></i> Scroll to Zoom</span>
+                    <span><i class="fas fa-hand-pointer"></i> Click Glowing Beacons</span>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2026 Ajay. All rights reserved.</p>
+    <!-- SECTION: PALACES & ROYAL GALLERIES -->
+    <section class="palaces-section section-padding" id="palaces">
+        <div class="container">
+            <div class="section-tag text-center"><i class="fas fa-archway"></i> Architecture & Treasures</div>
+            <h2 class="section-heading text-center">Palaces of Opulence & History</h2>
+            <p class="section-lead text-center">
+                Behind Mehrangarh's austere sandstone fortifications lies a labyrinth of exquisitely carved courtyards, 
+                gilded halls, and one of the finest royal museums across Asia.
+            </p>
+
+            <!-- Palace Filter Tabs -->
+            <div class="filter-tabs">
+                <button class="filter-btn active" data-filter="all">All Marvels</button>
+                <button class="filter-btn" data-filter="palace">Royal Palaces</button>
+                <button class="filter-btn" data-filter="museum">Museum Galleries</button>
+                <button class="filter-btn" data-filter="gate">Gates & Ramparts</button>
+            </div>
+
+            <!-- Palace Grid -->
+            <div class="palace-grid">
+                
+                <!-- Card 1: Phool Mahal -->
+                <div class="palace-card" data-category="palace">
+                    <div class="palace-img-wrap">
+                        <div class="palace-img-placeholder phool-mahal-bg">
+                            <span class="palace-tag">24K Gold Filigree</span>
+                        </div>
+                    </div>
+                    <div class="palace-content">
+                        <div class="palace-meta">
+                            <span><i class="fas fa-crown"></i> Maharaja Abhay Singh (1724–49)</span>
+                        </div>
+                        <h3 class="palace-title">Phool Mahal (Palace of Flowers)</h3>
+                        <p class="palace-desc">
+                            The most flamboyant and lavish hall in the fortress. Created as an exclusive pleasure chamber for classical 
+                            music and dance recitals, featuring gold leaf brought directly from Gujarat after victory in Ahmedabad.
+                        </p>
+                        <div class="palace-footer">
+                            <button class="btn-text-gold open-modal-btn" data-modal="phool-mahal">
+                                Explore Architecture & Stories &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Sheesh Mahal -->
+                <div class="palace-card" data-category="palace">
+                    <div class="palace-img-wrap">
+                        <div class="palace-img-placeholder sheesh-mahal-bg">
+                            <span class="palace-tag">Belgian Convex Mirrors</span>
+                        </div>
+                    </div>
+                    <div class="palace-content">
+                        <div class="palace-meta">
+                            <span><i class="fas fa-bed"></i> Royal Bedchamber of Ajit Singh</span>
+                        </div>
+                        <h3 class="palace-title">Sheesh Mahal (Hall of Mirrors)</h3>
+                        <p class="palace-desc">
+                            Inlaid with shimmering mirror mosaics, intricate floral stucco, and colorful glass panels depicting 
+                            scenes from the Ramayana and Lord Krishna dancing with Gopis, illuminated magically by a single candle flame.
+                        </p>
+                        <div class="palace-footer">
+                            <button class="btn-text-gold open-modal-btn" data-modal="sheesh-mahal">
+                                Explore Architecture & Stories &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Moti Mahal -->
+                <div class="palace-card" data-category="palace">
+                    <div class="palace-img-wrap">
+                        <div class="palace-img-placeholder moti-mahal-bg">
+                            <span class="palace-tag">Chunnam Pearl Plaster</span>
+                        </div>
+                    </div>
+                    <div class="palace-content">
+                        <div class="palace-meta">
+                            <span><i class="fas fa-landmark"></i> Hall of Public Audience</span>
+                        </div>
+                        <h3 class="palace-title">Moti Mahal (Pearl Palace)</h3>
+                        <p class="palace-desc">
+                            Built by Raja Sawai Sur Singh. Its polished seashell plaster sparkles like fine pearl. Above the hall sit five 
+                            concealed jharokha balconies allowing the queens (purdah) to listen unseen to court deliberations.
+                        </p>
+                        <div class="palace-footer">
+                            <button class="btn-text-gold open-modal-btn" data-modal="moti-mahal">
+                                Explore Architecture & Stories &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Daulat Khana & Howdahs -->
+                <div class="palace-card" data-category="museum">
+                    <div class="palace-img-wrap">
+                        <div class="palace-img-placeholder howdah-bg">
+                            <span class="palace-tag">Silver Elephant Seats</span>
+                        </div>
+                    </div>
+                    <div class="palace-content">
+                        <div class="palace-meta">
+                            <span><i class="fas fa-gem"></i> Royal Armoury & Regalia</span>
+                        </div>
+                        <h3 class="palace-title">Daulat Khana & Royal Howdahs</h3>
+                        <p class="palace-desc">
+                            Houses the world's most magnificent collection of ornate elephant carriages, including the solid silver 
+                            howdah presented by Mughal Emperor Shah Jahan to Maharaja Jaswant Singh I in the 17th century.
+                        </p>
+                        <div class="palace-footer">
+                            <button class="btn-text-gold open-modal-btn" data-modal="howdahs">
+                                Explore Architecture & Stories &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Loha Pol (The Iron Gate) -->
+                <div class="palace-card" data-category="gate">
+                    <div class="palace-img-wrap">
+                        <div class="palace-img-placeholder loha-pol-bg">
+                            <span class="palace-tag">31 Sati Handprints</span>
+                        </div>
+                    </div>
+                    <div class="palace-content">
+                        <div class="palace-meta">
+                            <span><i class="fas fa-shield-alt"></i> 15th Century Gateway</span>
+                        </div>
+                        <h3 class="palace-title">Loha Pol (The Iron Gate)</h3>
+                        <p class="palace-desc">
+                            The final defensive gate leading into the inner royal sanctuary. Its stone jambs bear the solemn, vermillion-stained 
+                            handprints of royal Rathore queens who committed Sati before funeral pyres in 1843.
+                        </p>
+                        <div class="palace-footer">
+                            <button class="btn-text-gold open-modal-btn" data-modal="loha-pol">
+                                Explore Architecture & Stories &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6: Kilkila & Cannon Ramparts -->
+                <div class="palace-card" data-category="gate">
+                    <div class="palace-img-wrap">
+                        <div class="palace-img-placeholder ramparts-bg">
+                            <span class="palace-tag">Cannon Battery</span>
+                        </div>
+                    </div>
+                    <div class="palace-content">
+                        <div class="palace-meta">
+                            <span><i class="fas fa-mountain"></i> 410 Ft Sheer Drop</span>
+                        </div>
+                        <h3 class="palace-title">The Grand Ramparts & Artillery</h3>
+                        <p class="palace-desc">
+                            Lined with historic brass and iron artillery pieces such as Kilkila, Shambhu Ban, and Gajnak, offering 
+                            unrivaled 360-degree views over Jodhpur's azure houses, Jaswant Thada, and the Thar desert horizon.
+                        </p>
+                        <div class="palace-footer">
+                            <button class="btn-text-gold open-modal-btn" data-modal="ramparts">
+                                Explore Architecture & Stories &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: CHRONOLOGY / RATHORE DYNASTY TIMELINE -->
+    <section class="timeline-section section-padding" id="timeline">
+        <div class="container">
+            <div class="section-tag text-center"><i class="fas fa-hourglass-half"></i> 560+ Years of Valor</div>
+            <h2 class="section-heading text-center">Chronicles of Mehrangarh</h2>
+            <p class="section-lead text-center">
+                From its foundation on the Mountain of Birds to its renaissance under the Mehrangarh Museum Trust.
+            </p>
+
+            <div class="timeline-container">
+                <div class="timeline-line"></div>
+
+                <!-- Event 1 -->
+                <div class="timeline-item left">
+                    <div class="timeline-badge"><i class="fas fa-flag"></i></div>
+                    <div class="timeline-panel">
+                        <span class="timeline-year">1459 AD</span>
+                        <h3 class="timeline-title">The Foundation by Rao Jodha</h3>
+                        <p class="timeline-body">
+                            Rao Jodha, 15th chief of the Rathore clan, shifts his seat from the vulnerable Mandore to the formidable, 
+                            isolated rocky plateau known as Bhakurcheeria (the Mountain of Birds), laying the foundation of Jodhpur.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Event 2 -->
+                <div class="timeline-item right">
+                    <div class="timeline-badge"><i class="fas fa-shield"></i></div>
+                    <div class="timeline-panel">
+                        <span class="timeline-year">1544 AD</span>
+                        <h3 class="timeline-title">The Siege of Sher Shah Suri</h3>
+                        <p class="timeline-body">
+                            Sher Shah Suri launches a massive campaign against Marwar. Following the hard-fought battle of Sammel, Suri 
+                            remarked: <em>"For a handful of bajra (millet), I nearly lost the empire of Hindustan."</em> The fort withstands the onslaught.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Event 3 -->
+                <div class="timeline-item left">
+                    <div class="timeline-badge"><i class="fas fa-sun"></i></div>
+                    <div class="timeline-panel">
+                        <span class="timeline-year">1707 AD</span>
+                        <h3 class="timeline-title">Maharaja Ajit Singh Reclaims the Citadel</h3>
+                        <p class="timeline-body">
+                            After decades of guerrilla resistance led by the legendary patriot Veer Durgadas Rathore, Maharaja Ajit Singh 
+                            ousts Mughal garrisons, embarking on an era of magnificent palace construction and marble restorations.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Event 4 -->
+                <div class="timeline-item right">
+                    <div class="timeline-badge"><i class="fas fa-archway"></i></div>
+                    <div class="timeline-panel">
+                        <span class="timeline-year">1806 AD</span>
+                        <h3 class="timeline-title">Construction of Jai Pol (Victory Gate)</h3>
+                        <p class="timeline-body">
+                            Maharaja Man Singh builds the monumental Jai Pol to celebrate crushing triumphs over the combined armies 
+                            of Jaipur and Bikaner. Cannon ball scars from this famous siege remain visibly embedded in the outer ramparts.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Event 5 -->
+                <div class="timeline-item left">
+                    <div class="timeline-badge"><i class="fas fa-landmark"></i></div>
+                    <div class="timeline-panel">
+                        <span class="timeline-year">1972 AD</span>
+                        <h3 class="timeline-title">Establishment of Museum Trust</h3>
+                        <p class="timeline-body">
+                            His Highness Maharaja Gaj Singh II dedicates the fort's historic collections to the public by founding 
+                            the Mehrangarh Museum Trust, creating one of the world's most meticulously preserved living heritage sites.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Event 6 -->
+                <div class="timeline-item right">
+                    <div class="timeline-badge"><i class="fas fa-music"></i></div>
+                    <div class="timeline-panel">
+                        <span class="timeline-year">Present Day</span>
+                        <h3 class="timeline-title">Global Cultural Capital</h3>
+                        <p class="timeline-body">
+                            Mehrangarh serves as the grand stage for the internationally acclaimed Rajasthan International Folk Festival (RIFF) 
+                            and the World Sacred Spirit Festival, uniting master artists from the Thar Desert and across the globe.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: LEGENDS & UNTOLD LORE -->
+    <section class="legends-section section-padding" id="legends">
+        <div class="container">
+            <div class="section-tag text-center"><i class="fas fa-scroll"></i> Desert Lore</div>
+            <h2 class="section-heading text-center">Myths, Curses & Sacrifice</h2>
+            <p class="section-lead text-center">
+                Beneath the towering sandstone walls of Mehrangarh echo tales of ancient hermits, royal curses, and eternal devotion.
+            </p>
+
+            <div class="legends-grid">
+                
+                <div class="legend-card">
+                    <div class="legend-icon"><i class="fas fa-feather-pointed"></i></div>
+                    <h3 class="legend-title">The Hermit's Curse: Cheeria Nathji</h3>
+                    <p class="legend-text">
+                        The hill of Bhakurcheeria was the secluded hermitage of a yogi named Cheeria Nathji. When forced to vacate by Rao Jodha, 
+                        the enraged hermit cursed the citadel: <em>"May your kingdom suffer eternal droughts of water!"</em> To this day, Jodhpur 
+                        experiences water scarcity every few years.
+                    </p>
+                </div>
+
+                <div class="legend-card">
+                    <div class="legend-icon"><i class="fas fa-hands-praying"></i></div>
+                    <h3 class="legend-title">The Supreme Sacrifice of Raja Ram Meghwal</h3>
+                    <p class="legend-text">
+                        To appease astrological omens and counteract the hermit's curse, a brave subject named Raja Ram Meghwal voluntarily agreed 
+                        to be buried alive inside the fort's foundation trench in 1459. His descendants were granted royal patronage and estates in perpetuity.
+                    </p>
+                </div>
+
+                <div class="legend-card">
+                    <div class="legend-icon"><i class="fas fa-dove"></i></div>
+                    <h3 class="legend-title">Chamunda Devi: The Guardian of 1965</h3>
+                    <p class="legend-text">
+                        During the 1965 war between India and Pakistan, Pakistani warplanes targeted Jodhpur. Citizens recount that a swarm of eagles 
+                        (the divine avatar of goddess Chamunda) formed an aerial canopy over the citadel and city, deflecting airborne bombings.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: TICKET BOOKING & E-PASS GENERATOR -->
+    <section class="booking-section section-padding" id="tickets">
+        <div class="container">
+            <div class="booking-layout">
+                
+                <!-- Left: Booking Form -->
+                <div class="booking-form-card">
+                    <div class="form-header">
+                        <span class="badge-gold"><i class="fas fa-shield-alt"></i> Official Heritage E-Ticket Desk</span>
+                        <h2 class="form-title">Reserve Your Citadel Entry Pass</h2>
+                        <p class="form-sub">Skip long on-site ticketing queues. Instant confirmation with QR pass generation.</p>
+                    </div>
+
+                    <form id="ticketBookingForm" class="ticket-form">
+                        <!-- Visitor Category -->
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-user-tag"></i> Visitor Category</label>
+                            <div class="category-options">
+                                <label class="radio-card active">
+                                    <input type="radio" name="visitorType" value="indian" checked>
+                                    <span class="radio-title">Indian National</span>
+                                    <span class="radio-price">₹100</span>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="visitorType" value="foreigner">
+                                    <span class="radio-title">International</span>
+                                    <span class="radio-price">₹600</span>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="visitorType" value="student">
+                                    <span class="radio-title">Student / Senior</span>
+                                    <span class="radio-price">₹50</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Date & Slot Selection -->
+                        <div class="form-row">
+                            <div class="form-group col-half">
+                                <label for="visitDate" class="form-label"><i class="fas fa-calendar-day"></i> Visit Date</label>
+                                <input type="date" id="visitDate" class="form-input" required>
+                            </div>
+                            <div class="form-group col-half">
+                                <label for="visitSlot" class="form-label"><i class="fas fa-clock"></i> Preferred Entry Slot</label>
+                                <select id="visitSlot" class="form-select">
+                                    <option value="morning">Morning (09:00 AM – 11:30 AM)</option>
+                                    <option value="midday" selected>Midday (11:30 AM – 02:30 PM)</option>
+                                    <option value="afternoon">Sunset Golden Hour (02:30 PM – 05:00 PM)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Quantity Selector -->
+                        <div class="form-row">
+                            <div class="form-group col-half">
+                                <label class="form-label"><i class="fas fa-users"></i> Number of Guests</label>
+                                <div class="counter-box">
+                                    <button type="button" class="counter-btn" id="guestMinus">-</button>
+                                    <span class="counter-value" id="guestCount">1</span>
+                                    <button type="button" class="counter-btn" id="guestPlus">+</button>
+                                </div>
+                            </div>
+                            <div class="form-group col-half">
+                                <label for="guestName" class="form-label"><i class="fas fa-id-card"></i> Lead Visitor Name</label>
+                                <input type="text" id="guestName" class="form-input" placeholder="e.g., Ajay Rathore" required>
+                            </div>
+                        </div>
+
+                        <!-- Add-ons -->
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-plus-circle"></i> Royal Experiences & Add-ons</label>
+                            <div class="addons-list">
+                                <label class="addon-checkbox">
+                                    <input type="checkbox" id="addonAudio" value="180">
+                                    <div class="addon-info">
+                                        <span class="addon-name">Audio Guide Headset (Voice of Marwar)</span>
+                                        <span class="addon-sub">English, Hindi, French, German, Spanish</span>
+                                    </div>
+                                    <span class="addon-rate">+₹180 / person</span>
+                                </label>
+
+                                <label class="addon-checkbox">
+                                    <input type="checkbox" id="addonElevator" value="50">
+                                    <div class="addon-info">
+                                        <span class="addon-name">Royal Lift / Elevator Access</span>
+                                        <span class="addon-sub">Direct access to palace ramparts</span>
+                                    </div>
+                                    <span class="addon-rate">+₹50 / person</span>
+                                </label>
+
+                                <label class="addon-checkbox">
+                                    <input type="checkbox" id="addonCamera" value="100">
+                                    <div class="addon-info">
+                                        <span class="addon-name">Still & Video Camera Permit</span>
+                                        <span class="addon-sub">DSLR / Mirrorless photography</span>
+                                    </div>
+                                    <span class="addon-rate">+₹100 flat</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Total Fare Summary & Submit -->
+                        <div class="fare-calculation-bar">
+                            <div class="fare-label">
+                                <span>Estimated Total:</span>
+                                <h3 class="fare-amount" id="totalFareAmount">₹100</h3>
+                            </div>
+                            <button type="submit" class="btn btn-primary-royal btn-large">
+                                <i class="fas fa-bolt"></i> Generate Royal E-Pass
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: Instant Pass Preview Card -->
+                <div class="booking-preview-card">
+                    <div class="preview-badge"><i class="fas fa-ticket-simple"></i> Live Preview</div>
+                    
+                    <div class="e-pass-ticket" id="ePassPreview">
+                        <div class="e-pass-header">
+                            <div class="e-pass-logo">
+                                <i class="fas fa-sun"></i>
+                                <span>MEHRANGARH TRUST</span>
+                            </div>
+                            <span class="e-pass-type" id="passBadgeType">INDIAN ENTRY</span>
+                        </div>
+
+                        <div class="e-pass-body">
+                            <div class="pass-detail-row">
+                                <div class="pass-col">
+                                    <span class="label">PASS HOLDER</span>
+                                    <span class="value" id="previewName">Ajay Rathore</span>
+                                </div>
+                                <div class="pass-col">
+                                    <span class="label">BOOKING ID</span>
+                                    <span class="value gold-code" id="previewBookingId">MHR-2026-8941</span>
+                                </div>
+                            </div>
+
+                            <div class="pass-detail-row">
+                                <div class="pass-col">
+                                    <span class="label">VISIT DATE</span>
+                                    <span class="value" id="previewDate">Today</span>
+                                </div>
+                                <div class="pass-col">
+                                    <span class="label">ENTRY TIME</span>
+                                    <span class="value" id="previewSlot">Midday Slot</span>
+                                </div>
+                            </div>
+
+                            <div class="pass-detail-row">
+                                <div class="pass-col">
+                                    <span class="label">GUESTS</span>
+                                    <span class="value" id="previewGuests">1 Person</span>
+                                </div>
+                                <div class="pass-col">
+                                    <span class="label">ADD-ONS</span>
+                                    <span class="value" id="previewAddons">None</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="e-pass-barcode-area">
+                            <div class="qr-code-box">
+                                <i class="fas fa-qrcode qr-icon"></i>
+                            </div>
+                            <div class="barcode-info">
+                                <span>SCAN AT JAI POL ENTRANCE</span>
+                                <small>Valid for date and slot of issue only.</small>
+                            </div>
+                        </div>
+
+                        <div class="e-pass-status-pill">
+                            <i class="fas fa-circle-check"></i> OFFICIAL MEHRANGARH VERIFIED PASS
+                        </div>
+                    </div>
+
+                    <div class="preview-notes">
+                        <p><i class="fas fa-info-circle"></i> <strong>Note:</strong> Show this digital QR code at <em>Jai Pol</em> entrance. No printout strictly required.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: VISITOR'S PRACTICAL GUIDE -->
+    <section class="visit-section section-padding" id="visit">
+        <div class="container">
+            <div class="section-tag text-center"><i class="fas fa-compass"></i> Practical Information</div>
+            <h2 class="section-heading text-center">Plan Your Visit to the Sun City</h2>
+            <p class="section-lead text-center">
+                Everything you need to know for an unforgettable journey to Rajasthan's crown jewel.
+            </p>
+
+            <div class="guide-grid">
+                
+                <div class="guide-card">
+                    <div class="guide-icon"><i class="fas fa-clock"></i></div>
+                    <h3>Operating Hours</h3>
+                    <p>Open daily from <strong>09:00 AM to 05:00 PM</strong> throughout the year, including national holidays. Sunset ramparts viewing closes at 05:30 PM.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-icon"><i class="fas fa-calendar-star"></i></div>
+                    <h3>Best Season</h3>
+                    <p><strong>October to March</strong> offers pleasant desert breezes and cool mornings (15°C–25°C). October also hosts the vibrant RIFF folk festival.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-icon"><i class="fas fa-route"></i></div>
+                    <h3>How to Reach</h3>
+                    <p>Located in central Jodhpur. Auto-rickshaws and cabs ascend the fort hill road easily. A stone pedestrian pathway also winds up from the old blue town (Navchokiya).</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-icon"><i class="fas fa-person-walking-luggage"></i></div>
+                    <h3>Guided Tours</h3>
+                    <p>High-fidelity audio guides are available in 7 global languages. Highly knowledgeable royal trust guides can also be engaged at the ticket counter.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-icon"><i class="fas fa-universal-access"></i></div>
+                    <h3>Accessibility & Lift</h3>
+                    <p>Modern passenger elevators transport elderly and mobility-impaired visitors directly from the base gate to the top palatial courtyards.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-icon"><i class="fas fa-mountain-sun"></i></div>
+                    <h3>Desert Rock Park</h3>
+                    <p>Adjacent to the fort lies the 70-hectare <strong>Rao Jodha Desert Rock Park</strong>, showcasing ancient volcanic rhyolite rock formations and Thar flora.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-brand">
+                <div class="logo-emblem">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <h3>MEHRANGARH FORT</h3>
+                <p>The Citadel of the Sun • Jodhpur, Rajasthan, India</p>
+                <p class="heritage-credit">Preserved & Administered by the Mehrangarh Museum Trust</p>
+            </div>
+
+            <div class="footer-nav">
+                <h4>Quick Exploration</h4>
+                <ul>
+                    <li><a href="#hero">Citadel Overview</a></li>
+                    <li><a href="#virtual-tour">Interactive 3D Virtual Tour</a></li>
+                    <li><a href="#palaces">Palaces of Opulence</a></li>
+                    <li><a href="#timeline">Chronology & Battles</a></li>
+                    <li><a href="#tickets">Heritage E-Tickets</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-contacts">
+                <h4>Citadel Desk</h4>
+                <p><i class="fas fa-location-dot"></i> Fort Rd, Jodhpur, Rajasthan 342006</p>
+                <p><i class="fas fa-phone"></i> +91 291 254 8790</p>
+                <p><i class="fas fa-envelope"></i> info@mehrangarh.org</p>
+                <div class="social-links">
+                    <a href="https://github.com/ajayhereonly" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container footer-bottom-inner">
+                <p>&copy; 2026 Mehrangarh Museum Trust &bull; Dedicated to the Living Heritage of Marwar.</p>
+                <p>Crafted with High Transitions & 3D WebGL for Ajay.</p>
+            </div>
+        </div>
     </footer>
 
-    <script>
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
+    <!-- Palace Detail Modal Window -->
+    <div class="modal-overlay" id="palaceModalOverlay">
+        <div class="modal-card">
+            <button class="modal-close" id="modalCloseBtn">&times;</button>
+            <div class="modal-banner" id="modalBanner">
+                <span class="modal-badge" id="modalBadge">Palace Highlight</span>
+            </div>
+            <div class="modal-content-scroll">
+                <h2 class="modal-title" id="modalTitle">Phool Mahal</h2>
+                <span class="modal-subtitle" id="modalSubtitle">Built by Maharaja Abhay Singh (1724–1749)</span>
+                <div class="modal-body" id="modalBody">
+                    <p>Detailed architectural analysis and historical narrative...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            const nav = document.querySelector('.navbar');
-            nav.classList.toggle('scrolled', window.scrollY > 50);
-        });
+    <!-- Generated E-Pass Printable Modal -->
+    <div class="modal-overlay" id="ePassSuccessModal">
+        <div class="modal-card pass-success-card">
+            <button class="modal-close" id="passSuccessCloseBtn">&times;</button>
+            <div class="pass-success-header">
+                <div class="success-icon"><i class="fas fa-check"></i></div>
+                <h2>Royal E-Pass Issued Successfully!</h2>
+                <p>Present this pass digitally or downloaded on arrival at Jai Pol.</p>
+            </div>
 
-        // Animate on scroll
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-in');
-                }
-            });
-        }, { threshold: 0.1 });
+            <div class="printable-pass-container" id="printablePassWrap">
+                <!-- Cloned E-Pass will be populated dynamically -->
+            </div>
 
-        document.querySelectorAll('.skill-card, .achievement-card, .edu-card, .contact-card').forEach(el => {
-            observer.observe(el);
-        });
-    </script>
+            <div class="pass-modal-actions">
+                <button class="btn btn-royal-gold" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print / Save as PDF
+                </button>
+                <button class="btn btn-glass" id="closePassModalBtn">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="tour3d.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

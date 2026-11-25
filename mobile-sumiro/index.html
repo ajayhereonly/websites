@@ -428,6 +428,7 @@ addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('orientationchange',()=>{const p=document.getElementById('portrait');p.style.display=innerHeight>innerWidth?'block':'none';setTimeout(resize,250);});
 document.getElementById('portrait').style.display=innerHeight>innerWidth?'block':'none';
 updateHud();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body>
 </html>

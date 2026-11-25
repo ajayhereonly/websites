@@ -1,0 +1,14 @@
+{
+  "name": "Sumi Trail — Mobile 3D Adventure",
+  "short_name": "Sumi Trail",
+  "description": "A touch-first 3D island adventure.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0b1118",
+  "theme_color": "#0b1118",
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

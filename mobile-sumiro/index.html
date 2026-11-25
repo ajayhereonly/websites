@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1118">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SUMI TRAIL — Mobile 3D Adventure</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{color-scheme:dark;--ink:#101821;--paper:#e7e1d3;--gold:#d7b66b;--muted:#aeb5b8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1118;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none;user-select:none}
+#game{position:fixed;inset:0;overflow:hidden;background:linear-gradient(#8cabb0,#d1c9b2)}
+#game canvas{display:block;width:100%;height:100%;touch-action:none}
+#vignette{position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 110px #071017a8}
+#hud{position:fixed;top:env(safe-area-inset-top,10px);left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:13px 16px;pointer-events:none;gap:10px}
+.pill{background:#101821c9;border:1px solid #ffffff25;border-radius:14px;padding:9px 12px;color:#f3eee4;font-size:12px;letter-spacing:.04em;backdrop-filter:blur(12px);box-shadow:0 6px 22px #0002}
+#brand{font-weight:900;letter-spacing:.18em;font-size:11px;color:#ead7a7}
+#stats{display:flex;gap:7px;align-items:center}
+#stats strong{color:#fff;font-size:14px}
+#level{color:#d7b66b}
+#pause{pointer-events:auto;border:1px solid #ffffff35;background:#101821c9;color:#fff;border-radius:12px;padding:9px 12px;font-weight:800}
+#controls{position:fixed;inset:auto 0 0 0;height:190px;padding:0 22px max(18px,env(safe-area-inset-bottom));display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none}
+#stickZone{width:146px;height:146px;position:relative;pointer-events:auto;touch-action:none}
+#stickBase{position:absolute;inset:11px;border:1px solid #ffffff45;border-radius:50%;background:#0b162a59;backdrop-filter:blur(5px);box-shadow:inset 0 0 25px #fff1}
+#stickKnob{position:absolute;width:56px;height:56px;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1px solid #ffffff90;background:linear-gradient(145deg,#eee5d0dd,#a5b3b4b8);box-shadow:0 5px 18px #0006}
+#stickHint{position:absolute;inset:0;display:grid;place-items:center;color:#ffffff8a;font-size:10px;letter-spacing:.18em;font-weight:800;pointer-events:none}
+#actions{pointer-events:auto;display:grid;grid-template-columns:repeat(2,68px);grid-template-rows:repeat(2,62px);gap:9px 10px;align-items:end}
+.action{border:1px solid #ffffff70;border-radius:20px;background:linear-gradient(145deg,#263543d9,#101821e8);color:#f7f1e3;box-shadow:0 7px 20px #0005,inset 0 1px #fff3;font-weight:900;font-size:10px;letter-spacing:.06em;touch-action:none}
+.action:active,.action.down{background:linear-gradient(145deg,#b88e4b,#78582f);transform:scale(.96)}
+.action.primary{background:linear-gradient(145deg,#d5b36a,#98733e);color:#101821;border-color:#f3d995}
+.action span{display:block;font-size:19px;margin-bottom:2px}
+#toast{position:fixed;left:50%;top:23%;transform:translate(-50%,-10px);background:#101821df;border:1px solid #d7b66b77;color:#f5e9c8;padding:10px 16px;border-radius:14px;font-weight:700;font-size:13px;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:22px;background:linear-gradient(115deg,#07111bd9,#15232bb8);backdrop-filter:blur(5px);z-index:5}
+#card{width:min(510px,100%);padding:30px 28px 25px;border:1px solid #e7d5aa4d;border-radius:25px;background:linear-gradient(145deg,#1a2730f2,#0c141df5);box-shadow:0 28px 90px #0008;color:#f5f0e4}
+.eyebrow{font-size:10px;letter-spacing:.28em;font-weight:900;color:#d7b66b}
+h1{margin:11px 0 7px;font-family:Georgia,serif;font-size:clamp(35px,8vw,58px);line-height:.98;letter-spacing:-.04em;font-weight:500}
+#subtitle{color:#c2c8c5;font-size:14px;line-height:1.6;margin:14px 0 19px;max-width:420px}
+#instructions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0 23px}
+.instruction{border:1px solid #ffffff18;border-radius:12px;padding:10px;color:#ccd2d0;font-size:11px;line-height:1.45}
+.instruction b{display:block;color:#f0d49a;font-size:12px;margin-bottom:3px}
+#start{width:100%;border:0;border-radius:14px;padding:16px;background:linear-gradient(100deg,#e0c17b,#ab8042);color:#121820;font-weight:950;letter-spacing:.14em;font-size:13px;box-shadow:0 8px 25px #bb915c35}
+#start:active{transform:scale(.99)}
+#smallprint{font-size:10px;color:#8d9b9c;text-align:center;margin-top:13px;line-height:1.5}
+#endOverlay{display:none;position:fixed;inset:0;z-index:6;background:#07111bd9;align-items:center;justify-content:center;padding:24px}
+#endCard{width:min(420px,100%);text-align:center;padding:28px;border-radius:24px;background:#131e28;border:1px solid #d7b66b66;color:#f5f0e4}
+#endTitle{font:500 40px Georgia,serif;margin:0 0 8px}
+#restart{border:0;border-radius:12px;background:#d7b66b;color:#111923;font-weight:900;padding:14px 22px;margin-top:13px}
+#portrait{display:none;position:fixed;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);background:#101821e8;color:#f2e7cf;border:1px solid #d7b66b66;border-radius:14px;padding:12px 16px;font-size:12px;pointer-events:none}
+@media(hover:hover) and (pointer:fine){#controls{opacity:.72}#controls:hover{opacity:1}}
+@media(max-height:520px){#controls{height:145px;padding-bottom:max(8px,env(safe-area-inset-bottom))}#stickZone{width:120px;height:120px}#actions{grid-template-columns:repeat(2,60px);grid-template-rows:repeat(2,49px)}.action{border-radius:15px}#hud{padding-top:8px}}
+</style>
+</head>
+<body>
+<div id="game"></div><div id="vignette"></div>
+<div id="hud">
+  <div class="pill"><div id="brand">SUMI TRAIL</div><div id="level">CHAPTER 01 · THE MIST PASS</div></div>
+  <div id="stats"><div class="pill">SEALS <strong id="coins">0 / 18</strong></div><div class="pill">HEARTS <strong id="lives">♥ ♥ ♥</strong></div><button id="pause" aria-label="Pause game">Ⅱ</button></div>
+</div>
+<div id="controls">
+  <div id="stickZone" aria-label="Movement joystick"><div id="stickBase"></div><div id="stickHint">MOVE</div><div id="stickKnob"></div></div>
+  <div id="actions">
+    <button class="action" id="climb"><span>↟</span>CLIMB</button>
+    <button class="action primary" id="jump"><span>↑</span>JUMP</button>
+    <button class="action" id="attack"><span>刀</span>STRIKE</button>
+    <button class="action" id="dash"><span>»</span>DASH</button>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="portrait">Landscape mode gives the best view. Rotate your phone.</div>
+<div id="overlay">
+  <div id="card">
+    <div class="eyebrow">A SMALL 3D ADVENTURE · BUILT FOR TOUCH</div>
+    <h1>SUMI<br>TRAIL</h1>
+    <p id="subtitle">Cross the mist islands, gather the lost seals, and reach the mountain shrine. A quiet, ink-inspired journey made to play on your phone.</p>
+    <div id="instructions">
+      <div class="instruction"><b>MOVE</b>Drag the left joystick</div>
+      <div class="instruction"><b>LOOK</b>Drag the right side of the screen</div>
+      <div class="instruction"><b>JUMP / CLIMB</b>Use the two upper buttons</div>
+      <div class="instruction"><b>STRIKE / DASH</b>Use the two lower buttons</div>
+    </div>
+    <button id="start">ENTER THE MIST</button>
+    <div id="smallprint">Works in Android Chrome · Landscape recommended · Internet required for the first load</div>
+  </div>
+</div>
+<div id="endOverlay"><div id="endCard"><div class="eyebrow">THE JOURNEY IS COMPLETE</div><h2 id="endTitle">The shrine is found.</h2><p id="endText">You gathered the seals and crossed the mist pass.</p><button id="restart">PLAY AGAIN</button></div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const host = document.getElementById('game');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9bb3b1);
+scene.fog = new THREE.FogExp2(0x9bb3b1, 0.009);
+const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.1, 260);
+const renderer = new THREE.WebGLRenderer({antialias:false, powerPreference:'high-performance', alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+host.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xdce9e3,0x35434b,2.0));
+const sun = new THREE.DirectionalLight(0xffe5bd,2.4); sun.position.set(-25,45,20); scene.add(sun);
+const fill = new THREE.DirectionalLight(0x9ab4bb,0.75); fill.position.set(25,18,-35); scene.add(fill);
+
+const mat = (color, roughness=0.9, metalness=0) => new THREE.MeshStandardMaterial({color,roughness,metalness});
+const stone = mat(0x696d68), stoneDark = mat(0x424c4e), moss = mat(0x53695c), grass = mat(0x73816b), wood = mat(0x4b342b), red = mat(0x873e35), gold = mat(0xd7b66b,.55,.35), cream = mat(0xe5dcc8), ink = mat(0x18222a), cloth = mat(0x31444a);
+const ground = [];
+const coins = [];
+const enemies = [];
+const deco = [];
+const tmp = new THREE.Object3D();
+
+function box(parent, x,y,z, sx,sy,sz, material, cast=false) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);
+  m.position.set(x,y,z); if(cast){m.castShadow=true;m.receiveShadow=true;} parent.add(m); return m;
+}
+function cylinder(parent,x,y,z,rt,rb,h,material,segments=8){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,segments),material);
+  m.position.set(x,y,z); parent.add(m); return m;
+}
+function cone(parent,x,y,z,r,h,material,segments=7){
+  const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,segments),material);m.position.set(x,y,z);parent.add(m);return m;
+}
+function platform(x,z,w,len,y){
+  const top = box(scene,x,y-.2,z,w,.42,len,stone);
+  box(scene,x,y-.47,z,w-.65,.18,len-.65,grass);
+  // rocky undercut and chipped side forms
+  box(scene,x,y-1.05,z,w*.84,1.35,len*.82,stoneDark);
+  for(let i=0;i<6;i++){
+    const px=x+(Math.random()-.5)*w*.9, pz=z+(Math.random()-.5)*len*.9;
+    const r=.35+Math.random()*.7;
+    cone(scene,px,y-1.5-Math.random()*.3,pz,r,.8+Math.random()*.7,stoneDark,5);
+  }
+  const p={x,z,w,len,y,minX:x-w/2,maxX:x+w/2,minZ:z-len/2,maxZ:z+len/2};
+  ground.push(p); return p;
+}
+platform(0,7,22,40,0);
+platform(1,-31,16,24,2);
+platform(-1,-58,16,22,4);
+platform(0,-86,20,30,6);
+
+// Mist-coloured water far below the islands.
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(350,350),mat(0x536f76,.55));
+sea.rotation.x=-Math.PI/2; sea.position.y=-7.5; scene.add(sea);
+
+// Layered distant mountain silhouettes.
+for(let row=0;row<3;row++){
+  const count=19;
+  for(let i=0;i<count;i++){
+    const x=(i-count/2)*18+(Math.random()-.5)*8;
+    const z=-115-row*23-Math.random()*20;
+    const h=17+Math.random()*20;
+    const mountain=cone(scene,x,h/2-1,z,10+Math.random()*5,h,mat(row===0?0x748b88:row===1?0x829995:0x9eae9f),5);
+    mountain.scale.z=1.5;
+  }
+}
+function tree(x,z,baseY=0,scale=1){
+  const g=new THREE.Group();g.position.set(x,baseY,z);g.scale.setScalar(scale);scene.add(g);
+  cylinder(g,0,1.2,0,.16,.25,2.4,wood,7);
+  cone(g,0,2.6,0,1.15,2.3,moss,7);
+  cone(g,0,3.65,0,.83,1.8,grass,7);
+  cone(g,0,4.45,0,.48,1.2,moss,7);
+}
+function bamboo(x,z,baseY=0){
+  const g=new THREE.Group();g.position.set(x,baseY,z);scene.add(g);
+  for(let i=0;i<4;i++){
+    const xx=(i-1.5)*.32, h=4+Math.random()*2;
+    cylinder(g,xx,h/2,0,.055,.07,h,moss,6);
+    for(let j=1;j<4;j++) cylinder(g,xx,h*j/4,0,.083,.083,.075,cream,6);
+    const leaf=cone(g,xx+.35,h*.72,0,.27,.8,grass,5);leaf.rotation.z=-.8;
+  }
+}
+function torii(z,y){
+  const g=new THREE.Group();g.position.set(0,y,z);scene.add(g);
+  box(g,-2.5,2.1,0,.28,4.2,.3,red);
+  box(g,2.5,2.1,0,.28,4.2,.3,red);
+  box(g,0,4.1,0,7,.38,.65,red);
+  box(g,0,3.7,0,5.7,.24,.48,wood);
+  box(g,0,2.8,0,5.1,.18,.35,wood);
+  box(g,0,4.38,0,.7,.24,.72,gold);
+}
+function lantern(x,z,y=0){
+  const g=new THREE.Group();g.position.set(x,y,z);scene.add(g);
+  cylinder(g,0,.8,0,.09,.14,1.6,wood,7);
+  box(g,0,1.65,0,.7,.65,.7,red);
+  box(g,0,1.65,0,.48,.68,.48,gold);
+  cone(g,0,2.12,0,.56,.28,wood,4);
+  cone(g,0,1.18,0,.5,.22,wood,4);
+}
+function addCoin(x,y,z){
+  const g=new THREE.Group();g.position.set(x,y,z);scene.add(g);
+  const c=new THREE.Mesh(new THREE.TorusGeometry(.42,.12,8,16),gold);g.add(c);
+  const core=new THREE.Mesh(new THREE.SphereGeometry(.18,8,8),cream);g.add(core);
+  coins.push({group:g,baseY:y,got:false});
+}
+const stages=[
+  {x:0,z:7,w:22,len:40,y:0},
+  {x:1,z:-31,w:16,len:24,y:2},
+  {x:-1,z:-58,w:16,len:22,y:4},
+  {x:0,z:-86,w:20,len:30,y:6}
+];
+for(const s of stages){
+  for(let i=0;i<7;i++){
+    const side=i%2?1:-1, z=s.z- s.len*.38 + Math.floor(i/2)*3.8;
+    const x=s.x+side*(s.w*.5-1.6);
+    if(i%3===0) tree(x,z,s.y,0.65+Math.random()*.25);
+    else bamboo(x,z,s.y);
+  }
+  lantern(s.x-s.w*.34,s.z-s.len*.32,s.y);
+  lantern(s.x+s.w*.34,s.z+s.len*.32,s.y);
+}
+torii(-98,6);
+for(let i=0;i<18;i++){
+  const stage=i<5?stages[0]:i<10?stages[1]:i<14?stages[2]:stages[3];
+  const a=(i%5)/4-.5;
+  addCoin(stage.x+a*(stage.w*.62),stage.y+1.55,stage.z+((i%3)-1)*(stage.len*.28));
+}
+function makeWarrior(){
+  const g=new THREE.Group();
+  // boots, layered robe and a small, readable silhouette
+  box(g,-.22,.18,0,.28,.34,.38,ink);box(g,.22,.18,0,.28,.34,.38,ink);
+  const body=new THREE.Mesh(new THREE.CapsuleGeometry(.48,.8,4,8),cloth);body.position.y=1.12;g.add(body);
+  const armor=box(g,0,1.18,.03,.93,.58,.62,ink);
+  for(let i=0;i<3;i++) box(g,0,.91-i*.16,.35,.8,.09,.12,red);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.32,10,8),cream);head.position.y=1.95;g.add(head);
+  const hat=new THREE.Mesh(new THREE.CylinderGeometry(.58,.46,.15,10),ink);hat.position.y=2.25;g.add(hat);
+  const brim=new THREE.Mesh(new THREE.CylinderGeometry(.78,.78,.08,12),wood);brim.position.y=2.18;g.add(brim);
+  box(g,.48,1.25,-.1,.12,.9,.12,gold).rotation.z=-.5;
+  return g;
+}
+const player={group:makeWarrior(),x:0,z:15,y:0,vx:0,vz:0,vy:0,grounded:true,lives:3,checkpoint:0,coins:0,invuln:0,attack:0,dash:0};
+scene.add(player.group);
+let yaw=0, pitch=.27, running=false, paused=false, started=false, victory=false;
+let joyX=0,joyY=0, sprint=false, cameraPointer=null, lastFrame=0, clock=0;
+const keys={};
+const coinText=document.getElementById('coins'), lifeText=document.getElementById('lives'), levelText=document.getElementById('level');
+function toast(message){
+  const el=document.getElementById('toast');el.textContent=message;el.classList.add('show');
+  clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),1400);
+}
+function updateHud(){
+  coinText.textContent=player.coins+' / 18';
+  lifeText.textContent='♥ '.repeat(player.lives).trim()||'—';
+  const stage=player.z>-19?1:player.z>-46?2:player.z>-70?3:4;
+  levelText.textContent='CHAPTER 0'+stage+' · '+['THE MIST PASS','MOSS GARDEN','BROKEN RIDGE','SHRINE OF DAWN'][stage-1];
+}
+function respawn(){
+  const cp=stages[player.checkpoint];
+  player.x=cp.x;player.z=cp.z+cp.len*.32;player.y=cp.y;player.vx=0;player.vz=0;player.vy=0;player.group.position.set(player.x,player.y,player.z);
+  player.invuln=2;toast('Back to the last checkpoint');
+}
+function damage(){
+  if(player.invuln>0)return;
+  player.lives--;player.invuln=2.2;updateHud();
+  if(player.lives<=0){finish(false);return;}
+  respawn();
+}
+function findGround(x,z){
+  let best=null;
+  for(const p of ground){
+    if(x>=p.minX&&x<=p.maxX&&z>=p.minZ&&z<=p.maxZ&&(!best||p.y>best.y))best=p;
+  }
+  return best;
+}
+function addEnemy(x,z,y){
+  const g=new THREE.Group();g.position.set(x,y,z);scene.add(g);
+  const torso=new THREE.Mesh(new THREE.SphereGeometry(.52,8,7),red);torso.position.y=.75;g.add(torso);
+  const face=new THREE.Mesh(new THREE.SphereGeometry(.32,8,7),cream);face.position.y=1.3;g.add(face);
+  const horn1=cone(g,-.22,1.65,0,.16,.55,ink,5);horn1.rotation.z=-.4;
+  const horn2=cone(g,.22,1.65,0,.16,.55,ink,5);horn2.rotation.z=.4;
+  enemies.push({group:g,originX:x,originZ:z,phase:Math.random()*6,alive:true,y});
+}
+addEnemy(-4,-29,2);addEnemy(4,-55,4);addEnemy(-4,-83,6);
+
+function act(name){
+  if(!started||paused||victory)return;
+  if(name==='jump'&&player.grounded){player.vy=10.8;player.grounded=false;}
+  if(name==='climb'){
+    // A short upward vault helps clear raised ledges and narrow gaps.
+    if(player.grounded||player.vy<2){player.vy=9.3;player.grounded=false;player.dash=.28;}
+  }
+  if(name==='dash'){
+    const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+    player.vx+=forward.x*8;player.vz+=forward.z*8;player.dash=.22;
+  }
+  if(name==='attack'){
+    player.attack=.28;
+    for(const e of enemies){
+      if(!e.alive)continue;
+      const dx=e.group.position.x-player.x,dz=e.group.position.z-player.z;
+      const distance=Math.hypot(dx,dz);
+      const forwardX=-Math.sin(yaw),forwardZ=-Math.cos(yaw);
+      const dot=(dx*forwardX+dz*forwardZ)/(distance||1);
+      if(distance<3.1&&dot>.05){e.alive=false;scene.remove(e.group);player.coins++;updateHud();toast('A shadow dispersed');}
+    }
+  }
+}
+function bindButton(id, action, hold=false){
+  const el=document.getElementById(id);
+  const down=e=>{e.preventDefault();el.classList.add('down');if(action==='dash'&&hold)sprint=true;else act(action);};
+  const up=e=>{e.preventDefault();el.classList.remove('down');if(action==='dash'&&hold)sprint=false;};
+  el.addEventListener('pointerdown',down);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);
+}
+bindButton('jump','jump');bindButton('climb','climb');bindButton('attack','attack');bindButton('dash','dash',true);
+
+const stick=document.getElementById('stickZone'), knob=document.getElementById('stickKnob');
+let stickId=null;
+function updateStick(e){
+  const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  let dx=e.clientX-cx,dy=e.clientY-cy;const max=r.width*.34,mag=Math.hypot(dx,dy);
+  if(mag>max){dx=dx/mag*max;dy=dy/mag*max;}
+  joyX=dx/max;joyY=dy/max;
+  knob.style.transform='translate(calc(-50% + '+dx+'px),calc(-50% + '+dy+'px))';
+}
+stick.addEventListener('pointerdown',e=>{e.preventDefault();stickId=e.pointerId;stick.setPointerCapture(stickId);updateStick(e);});
+stick.addEventListener('pointermove',e=>{if(e.pointerId===stickId)updateStick(e);});
+function releaseStick(e){if(e.pointerId!==stickId)return;stickId=null;joyX=0;joyY=0;knob.style.transform='translate(-50%,-50%)';}
+stick.addEventListener('pointerup',releaseStick);stick.addEventListener('pointercancel',releaseStick);
+
+renderer.domElement.addEventListener('pointerdown',e=>{
+  if(e.clientX<innerWidth*.42||e.clientY>innerHeight-210)return;
+  cameraPointer={id:e.pointerId,x:e.clientX,y:e.clientY};
+  renderer.domElement.setPointerCapture(e.pointerId);
+});
+renderer.domElement.addEventListener('pointermove',e=>{
+  if(!cameraPointer||e.pointerId!==cameraPointer.id)return;
+  const dx=e.clientX-cameraPointer.x,dy=e.clientY-cameraPointer.y;
+  yaw-=dx*.006;pitch=THREE.MathUtils.clamp(pitch+dy*.002,-.05,.65);
+  cameraPointer.x=e.clientX;cameraPointer.y=e.clientY;
+});
+function endCamera(e){if(cameraPointer&&e.pointerId===cameraPointer.id)cameraPointer=null;}
+renderer.domElement.addEventListener('pointerup',endCamera);renderer.domElement.addEventListener('pointercancel',endCamera);
+addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Space')act('jump');if(e.code==='KeyE')act('climb');if(e.code==='KeyJ')act('attack');if(e.code==='ShiftLeft'||e.code==='ShiftRight')sprint=true;});
+addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='ShiftLeft'||e.code==='ShiftRight')sprint=false;});
+document.getElementById('pause').addEventListener('click',()=>{
+  if(!started)return;paused=!paused;document.getElementById('pause').textContent=paused?'▶':'Ⅱ';toast(paused?'Paused':'Continue');
+});
+function finish(win){
+  victory=win;paused=true;
+  document.getElementById('endTitle').textContent=win?'The shrine is found.':'The mist closes in.';
+  document.getElementById('endText').textContent=win?'You collected '+player.coins+' seals and reached the mountain shrine.':'Your journey ended. Gather yourself and try the pass again.';
+  document.getElementById('endOverlay').style.display='flex';
+}
+function resetGame(){
+  for(const c of coins){c.got=false;c.group.visible=true;}
+  for(const e of enemies){scene.remove(e.group);e.alive=true;scene.add(e.group);e.group.position.set(e.originX,e.y,e.originZ);}
+  player.coins=0;player.lives=3;player.checkpoint=0;player.invuln=0;player.x=0;player.z=15;player.y=0;player.vx=0;player.vz=0;player.vy=0;player.grounded=true;
+  yaw=0;pitch=.27;paused=false;victory=false;document.getElementById('pause').textContent='Ⅱ';document.getElementById('endOverlay').style.display='none';updateHud();
+}
+document.getElementById('restart').addEventListener('click',resetGame);
+
+function update(dt){
+  clock+=dt;
+  for(const c of coins){if(!c.got){c.group.rotation.y+=dt*1.7;c.group.position.y=c.baseY+Math.sin(clock*2+c.baseY)*.16;}}
+  for(const e of enemies){
+    if(!e.alive)continue;
+    e.group.position.x=e.originX+Math.sin(clock*1.2+e.phase)*1.3;
+    e.group.position.z=e.originZ+Math.cos(clock*.8+e.phase)*.9;
+    e.group.rotation.y=Math.sin(clock+e.phase)*.35;
+    if(Math.hypot(e.group.position.x-player.x,e.group.position.z-player.z)<1.15)damage();
+  }
+  if(!started||paused)return;
+  const forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joyY;
+  const sideways=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+joyX;
+  let ix=sideways,iz=-forward,mag=Math.hypot(ix,iz);if(mag>1){ix/=mag;iz/=mag;}
+  const speed=(sprint?10.7:7.2);
+  const worldX=ix*Math.cos(yaw)-iz*Math.sin(yaw);
+  const worldZ=-ix*Math.sin(yaw)+iz*Math.cos(yaw);
+  const targetVX=worldX*speed,targetVZ=worldZ*speed;
+  const accel=player.grounded?19:8;
+  player.vx=THREE.MathUtils.damp(player.vx,targetVX,accel,dt);
+  player.vz=THREE.MathUtils.damp(player.vz,targetVZ,accel,dt);
+  const oldY=player.y;
+  player.x+=player.vx*dt;player.z+=player.vz*dt;
+  player.vy-=22*dt;player.y+=player.vy*dt;
+  const floor=findGround(player.x,player.z);
+  if(floor&&player.vy<=0&&oldY>=floor.y-.12&&player.y<=floor.y+.12){
+    player.y=floor.y;player.vy=0;player.grounded=true;
+  }else player.grounded=false;
+  if(player.y<-13){damage();return;}
+  if(player.invuln>0){player.invuln-=dt;player.group.visible=Math.floor(clock*12)%2===0;}
+  else player.group.visible=true;
+  player.group.position.set(player.x,player.y,player.z);
+  if(Math.hypot(player.vx,player.vz)>.6)player.group.rotation.y=Math.atan2(-player.vx,-player.vz);
+  player.group.position.y+=player.grounded?Math.sin(clock*12)*.025:0;
+  if(player.dash>0)player.dash-=dt;
+  if(player.attack>0)player.attack-=dt;
+  for(const c of coins){
+    if(c.got)continue;
+    if(Math.hypot(c.group.position.x-player.x,c.group.position.z-player.z)<1.25&&Math.abs(c.group.position.y-(player.y+1.2))<2.1){
+      c.got=true;c.group.visible=false;player.coins++;updateHud();toast('Seal collected');
+    }
+  }
+  const next=player.z>-19?0:player.z>-46?1:player.z>-70?2:3;
+  if(next>player.checkpoint&&floor){player.checkpoint=next;toast('Checkpoint reached');}
+  if(player.z<-99&&Math.abs(player.x)<5){finish(true);}
+  updateHud();
+}
+const cameraTarget=new THREE.Vector3();
+function render(dt){
+  const cp=new THREE.Vector3(player.x+Math.sin(yaw)*11,player.y+5.2+pitch*5,player.z+Math.cos(yaw)*11);
+  camera.position.lerp(cp,1-Math.exp(-4*dt));
+  cameraTarget.set(player.x,player.y+1.2,player.z);
+  camera.lookAt(cameraTarget);
+  renderer.render(scene,camera);
+}
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt=Math.min((now-lastFrame)/1000||0,.033);lastFrame=now;
+  if(!paused){update(dt);}
+  render(dt);
+}
+requestAnimationFrame(loop);
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.setSize(innerWidth,innerHeight);}
+addEventListener('resize',resize);
+document.getElementById('start').addEventListener('click',async()=>{
+  started=true;paused=false;document.getElementById('overlay').style.display='none';
+  try{if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('landscape');}catch(e){}
+  toast('Reach the shrine beyond the mist');
+});
+addEventListener('contextmenu',e=>e.preventDefault());
+addEventListener('orientationchange',()=>{const p=document.getElementById('portrait');p.style.display=innerHeight>innerWidth?'block':'none';setTimeout(resize,250);});
+document.getElementById('portrait').style.display=innerHeight>innerWidth?'block':'none';
+updateHud();
+</script>
+</body>
+</html>

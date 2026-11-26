@@ -127,7 +127,7 @@ function makeModel(){
    let tip=new THREE.Mesh(new THREE.SphereGeometry(.16,20,16),material(0xddeaff));tip.position.x=2.5;torquePivot.add(tip);
   }
  }else if(k===1){makeBicycle();}
- else if(k===2){rod([0,-1.6,0],[0,1.6,0],.05,0xffffff);for(let i=0;i<8;i++){let a=i*Math.PI/4;sphere(Math.cos(a)*1.3,Math.sin(a)*1.3,0,.16,0x69d5ff)}}
+ else if(k===2){makeSpinningChair();}
  else if(k===3){for(let y=-1.2;y<=1.2;y+=.4){let m=new THREE.Mesh(new THREE.BoxGeometry(3,.025,.9),material(y===-1.2?0xffbd59:0x377da7));m.position.y=y;add(m)}for(let i=0;i<6;i++)sphere(-1+i*.4,0,.15,.09,0x69d5ff)}
  else if(k===4){sphere(0,0,0,.6,0xffbd59);for(let i=0;i<3;i++){let t=new THREE.Mesh(new THREE.TorusGeometry(1.1+i*.25,.025,8,80),material(0x69d5ff));t.rotation.x=Math.PI/2;t.rotation.y=i*.6;add(t)}}
  else if(k===5||k===6){let m=new THREE.Mesh(new THREE.BoxGeometry(1.7,1.7,1.7),material(k===5?0x69d5ff:0xffbd59));add(m);for(let i=0;i<8;i++)sphere(-.6+(i%4)*.4,-.4+Math.floor(i/4)*.7,.9,.08,0xffffff)}

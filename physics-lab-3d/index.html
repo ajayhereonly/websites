@@ -24,7 +24,7 @@ const D=[
 ['Electric Capacitance','विद्युत धारिता','C = Q / V','धारिता = आवेश ÷ विभवांतर','Ability to store charge per unit potential difference. / प्रति इकाई विभवांतर आवेश संग्रह क्षमता।',[['Charge Q','आवेश Q',20,.1,100,'μC'],['Voltage V','वोल्टेज V',10,.1,100,'V']],v=>v[0]/v[1],'μF',[['Camera flash','A capacitor stores energy and releases it quickly for a flash.'],['Touch screen','Capacitive screens sense changes when a finger approaches.'],['Power supply','Capacitors smooth voltage fluctuations in circuits.']]]
 ];
 let index=0,lang='both',auto=false,torqueMode='door',torquePivot=null,torqueKnob=null,scene,camera,renderer,obj,rx=.08,ry=0,zoom=1,drag=false,lastX=0,lastY=0,lastFrame=performance.now();
-let doorState={angle:0,omega:0,force:0,torque:0,dragging:false,lastX:0,lastT:0};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+let doorState={angle:0,omega:0,force:0,torque:0,dragging:false,lastX:0,lastT:0};let bikeWheel=null,bikeTyre=null,bikeWeights=[],bikeState={angle:0,omega:0};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const $=id=>document.getElementById(id),fmt=n=>!isFinite(n)?'—':n!==0&&(Math.abs(n)<.001||Math.abs(n)>=1e6)?n.toExponential(3):Number(n.toPrecision(4)).toString();
 function topicList(){$('topics').innerHTML=D.map((d,i)=>'<button class="topic '+(i===index?'active':'')+'" data-i="'+i+'">'+d[0]+'<small>'+d[1]+'</small></button>').join('');document.querySelectorAll('.topic').forEach(b=>b.onclick=()=>{index=+b.dataset.i;draw()})}
 function draw(){
@@ -33,7 +33,10 @@ function draw(){
  $('examples').innerHTML=d[8].map((e,i)=>'<option value="'+i+'">'+e[0]+'</option>').join('');
  $('exampleText').textContent=d[8][0][1];$('examples').onchange=()=>{$('exampleText').textContent=d[8][+$('examples').value][1];makeModel()};
  $('doorMode').style.display=index===0?'inline-block':'none';$('wrenchMode').style.display=index===0?'inline-block':'none';
- if(index===0){
+ if(index===1){
+  $('controls').innerHTML=`<div class="control"><label><span>Added mass per weight / प्रत्येक भार का द्रव्यमान</span><b id="bikeMassVal">0.20 kg</b></label><input id="bikeMass" type="range" min="0.05" max="0.8" step="0.01" value="0.20"></div><div class="control"><label><span>Weight radius / अक्ष से भार की दूरी</span><b id="bikeRadiusVal">0.45 m</b></label><input id="bikeRadius" type="range" min="0.12" max="0.48" step="0.01" value="0.45"></div><div class="control"><label><span>Applied torque / लगाया गया बल आघूर्ण</span><b id="bikeTorqueVal">1.5 N·m</b></label><input id="bikeTorque" type="range" min="0.1" max="5" step="0.1" value="1.5"></div><button id="bikeReset">Reset experiment / प्रयोग रीसेट</button><div class="result" id="bikeReadout"></div><p class="desc">पहिए के चारों ओर लगे चार भारों को अक्ष के पास या टायर के किनारे ले जाने के लिए Radius slider बदलें। लाल टायर = अधिक जड़त्व आघूर्ण; नीला टायर = कम जड़त्व आघूर्ण। समान torque पर अधिक I होने से angular acceleration कम होगी। / Move four rim weights inward or outward. Red indicates higher I; blue indicates lower I.</p>`;
+  $('bikeMass').oninput=()=>{ $('bikeMassVal').textContent=(+$('bikeMass').value).toFixed(2)+' kg'; update()};$('bikeRadius').oninput=()=>{ $('bikeRadiusVal').textContent=(+$('bikeRadius').value).toFixed(2)+' m'; update()};$('bikeTorque').oninput=()=>{ $('bikeTorqueVal').textContent=(+$('bikeTorque').value).toFixed(1)+' N·m'; update()};$('bikeReset').onclick=()=>{ $('bikeMass').value=.20;$('bikeRadius').value=.45;$('bikeTorque').value=1.5;bikeState.angle=0;bikeState.omega=0;update()};
+ }else if(index===0){
   $('controls').innerHTML=`<div class="control"><label><span>Knob distance from hinge / कब्जे से दूरी</span><b id="val1">0.80 m</b></label><input id="distance" type="range" min=".2" max="1.8" step=".05" value=".8"></div>
   <div class="control"><label><span>Door mass / दरवाज़े का द्रव्यमान</span><b id="massVal">20 kg</b></label><input id="mass" type="range" min="5" max="50" step="1" value="20"></div>
   <div class="control"><label><span>Hinge friction / कब्जे का घर्षण</span><b id="frictionVal">0.15</b></label><input id="friction" type="range" min="0" max="1" step=".05" value=".15"></div>
@@ -55,6 +58,7 @@ function draw(){
 function values(){return [...document.querySelectorAll('.control input')].map(x=>+x.value)}
 function update(){
  let d=D[index],v=values();
+ if(index===1){updateBike();return}
  if(index===0){positionKnob();return}
  v.forEach((n,i)=>$('val'+i).textContent=fmt(n)+' '+d[5][i][5]);
  $('result').textContent='Calculated result / परिकलित मान: '+fmt(d[6](v))+' '+d[7];
@@ -117,7 +121,8 @@ function makeModel(){
    let shaft=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,2.5,24),material(0x69d5ff));shaft.rotation.z=-Math.PI/2;shaft.position.x=1.25;torquePivot.add(shaft);
    let tip=new THREE.Mesh(new THREE.SphereGeometry(.16,20,16),material(0xddeaff));tip.position.x=2.5;torquePivot.add(tip);
   }
- }else if(k===1||k===2){rod([0,-1.6,0],[0,1.6,0],.05,0xffffff);for(let i=0;i<8;i++){let a=i*Math.PI/4;sphere(Math.cos(a)*1.3,Math.sin(a)*1.3,0,.16,0x69d5ff)}}
+ }else if(k===1){makeBicycle();}
+ else if(k===2){rod([0,-1.6,0],[0,1.6,0],.05,0xffffff);for(let i=0;i<8;i++){let a=i*Math.PI/4;sphere(Math.cos(a)*1.3,Math.sin(a)*1.3,0,.16,0x69d5ff)}}
  else if(k===3){for(let y=-1.2;y<=1.2;y+=.4){let m=new THREE.Mesh(new THREE.BoxGeometry(3,.025,.9),material(y===-1.2?0xffbd59:0x377da7));m.position.y=y;add(m)}for(let i=0;i<6;i++)sphere(-1+i*.4,0,.15,.09,0x69d5ff)}
  else if(k===4){sphere(0,0,0,.6,0xffbd59);for(let i=0;i<3;i++){let t=new THREE.Mesh(new THREE.TorusGeometry(1.1+i*.25,.025,8,80),material(0x69d5ff));t.rotation.x=Math.PI/2;t.rotation.y=i*.6;add(t)}}
  else if(k===5||k===6){let m=new THREE.Mesh(new THREE.BoxGeometry(1.7,1.7,1.7),material(k===5?0x69d5ff:0xffbd59));add(m);for(let i=0;i<8;i++)sphere(-.6+(i%4)*.4,-.4+Math.floor(i/4)*.7,.9,.08,0xffffff)}
@@ -126,6 +131,34 @@ function makeModel(){
  else{for(let x of [-.8,.8]){let p=new THREE.Mesh(new THREE.BoxGeometry(.12,2,.9),material(0xffbd59));p.position.x=x;add(p)}for(let i=0;i<7;i++)sphere(-.55+i*.18,0,.2,.07,0x69d5ff)}
  update();
 }
+function makeBicycle(){
+ // Full bicycle side view; front wheel rotates around its hub.
+ const frame=material(0x69d5ff),metal=material(0xc5d5e8),rubber=material(0x246b91),black=material(0x172536);
+ const rear=new THREE.Vector3(-1.45,-.72,0),front=new THREE.Vector3(1.45,-.72,0),crank=new THREE.Vector3(-.05,-.72,0),seat=new THREE.Vector3(-.72,.28,0),head=new THREE.Vector3(.92,.22,0);
+ function tube(a,b,r=.045,mat=frame,parent=obj){let A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),12),mat);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());parent.add(m);return m}
+ function wheel(parent,center,r,mat,rotate=false){let pivot=new THREE.Group();pivot.position.copy(center);parent.add(pivot);let tire=new THREE.Mesh(new THREE.TorusGeometry(r,.075,16,80),mat);pivot.add(tire);let rim=new THREE.Mesh(new THREE.TorusGeometry(r-.045,.018,8,80),metal);pivot.add(rim);for(let i=0;i<12;i++){let a=i*Math.PI/6;tube([Math.cos(a)*.03,Math.sin(a)*.03,0],[Math.cos(a)*(r-.05),Math.sin(a)*(r-.05),0],.009,metal,pivot)}let hub=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.18,20),metal);hub.rotation.x=Math.PI/2;pivot.add(hub);return {pivot,tire}}
+ const rearWheel=wheel(obj,rear,.5,rubber);
+ const fw=wheel(obj,front,.5,rubber);bikeWheel=fw.pivot;bikeTyre=fw.tire;
+ // frame triangles
+ tube([-1.45,-.72,0],[-.72,.28,0]);tube([-.72,.28,0],[-.05,-.72,0]);tube([-1.45,-.72,0],[-.05,-.72,0]);tube([-.72,.28,0],[.92,.22,0]);tube([-.05,-.72,0],[.92,.22,0]);tube([.92,.22,0],[1.45,-.72,0],.065,metal);
+ // fork, handlebar, saddle, pedals, chain and crank
+ tube([.92,.22,.02],[1.45,-.72,.02],.055,metal);tube([.92,.22,-.02],[1.45,-.72,-.02],.055,metal);
+ tube([.82,.42,0],[1.12,.42,0],.045,black);tube([.82,.42,0],[.72,.62,0],.04,metal);
+ tube([-.98,.34,0],[-.46,.34,0],.075,black);tube([-.72,.28,0],[-.72,.65,0],.045,metal);
+ tube([-.05,-.72,.08],[.24,-.72,.08],.035,metal);tube([-.05,-.72,-.08],[-.34,-.72,-.08],.035,metal);
+ tube([.24,-.72,.08],[.35,-.72,.08],.035,black);tube([-.34,-.72,-.08],[-.45,-.72,-.08],.035,black);
+ // front-wheel experiment weights at four quadrants, mounted on the rotating rim
+ for(let i=0;i<4;i++){let a=i*Math.PI/2;let w=new THREE.Mesh(new THREE.SphereGeometry(.105,20,16),material(0xffbd59));bikeWheel.add(w);bikeWeights.push({mesh:w,a});}
+ updateBike();
+}
+function bikeInertia(){let m=+$('bikeMass')?.value||.2,r=+$('bikeRadius')?.value||.45;return .5*2.2*.5*.5+4*m*r*r}
+function updateBike(){if(index!==1||!$('bikeMass'))return;let m=+$('bikeMass').value,r=+$('bikeRadius').value,tau=+$('bikeTorque').value,I=bikeInertia(),alpha=tau/I;
+ $('bikeMassVal').textContent=m.toFixed(2)+' kg';$('bikeRadiusVal').textContent=r.toFixed(2)+' m';$('bikeTorqueVal').textContent=tau.toFixed(1)+' N·m';
+ bikeWeights.forEach(w=>{w.mesh.position.set(Math.cos(w.a)*r,Math.sin(w.a)*r,0.13);w.mesh.scale.setScalar(.75+m*.8)});
+ let t=Math.max(0,Math.min(1,(I-.275)/.55));let low=new THREE.Color(0x287ec2),high=new THREE.Color(0xff3434);if(bikeTyre)bikeTyre.material.color.copy(low).lerp(high,t);
+ $('bikeReadout').innerHTML='Moment of inertia / जड़त्व आघूर्ण: '+I.toFixed(3)+' kg·m²<br>Angular acceleration / कोणीय त्वरण: '+alpha.toFixed(3)+' rad/s²<br>Applied torque / लगाया गया बल आघूर्ण: '+tau.toFixed(2)+' N·m<br>Wheel speed / पहिए का कोणीय वेग: '+bikeState.omega.toFixed(2)+' rad/s';
+}
+function stepBike(dt){if(index!==1||!bikeWheel||!$('bikeTorque'))return;let alpha=(+$('bikeTorque').value)/bikeInertia();bikeState.omega+=alpha*dt;bikeState.angle+=bikeState.omega*dt;bikeWheel.rotation.z=bikeState.angle;updateBike()}
 function positionKnob(){if(!torqueKnob||!$('distance'))return;let x=Math.max(.33,Math.min(2.9,(+$('distance').value||.8)*1.62));torqueKnob.position.x=x-2.86}
 function stepDoorPhysics(dt){
  if(index!==0||torqueMode!=='door'||!torquePivot)return;
@@ -144,7 +177,7 @@ function stepDoorPhysics(dt){
 function animate(){
  requestAnimationFrame(animate);const now=performance.now(),dt=Math.min(.035,(now-lastFrame)/1000);lastFrame=now;
  if(auto&&!(index===0&&torqueMode==='door'))ry+=.004;
- stepDoorPhysics(dt);
+ stepDoorPhysics(dt);stepBike(dt);
  if(obj){obj.rotation.x=rx;obj.rotation.y=ry}camera.position.z=8.2/zoom;renderer.render(scene,camera);
 }
 

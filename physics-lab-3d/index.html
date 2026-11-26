@@ -56,6 +56,21 @@ function draw(){
   $('controls').innerHTML=`<div class="control"><label><span>Heat input / दी गई ऊष्मा</span><b id="heatVal">0%</b></label><input id="heatInput" type="range" min="0" max="100" step="1" value="0"></div><button id="meltReset">Reset ice / बर्फ फिर से जमाएँ</button><div class="result" id="latentReadout">Ice: solid · Temperature: 0 °C</div><p class="desc">पीली heat waves बर्फ तक पहुँचती हैं। बर्फ का ठोस टुकड़ा धीरे-धीरे छोटा होगा और नीचे नीला पानी बढ़ेगा। पिघलते समय तापमान लगभग 0 °C रहता है; ऊर्जा अवस्था बदलने में लगती है। / Yellow heat waves warm the ice. The solid ice visibly shrinks as liquid water grows; during melting, temperature stays near 0 °C.</p>`;
   $('heatInput').oninput=()=>{realMeltTarget=+$('heatInput').value/100;$('heatVal').textContent=$('heatInput').value+'%';};
   $('meltReset').onclick=()=>{realMeltTarget=0;realPulse=0;$('heatInput').value=0;$('heatVal').textContent='0%';};
+ }else if(index===6){
+  $('controls').innerHTML=`<div class="control"><label><span>Heat supplied Q</span><b id="heatQVal">40 kJ</b></label><input id="heatQ" type="range" min="1" max="200" value="40"></div><div class="control"><label><span>Water mass m</span><b id="waterMassVal">1 kg</b></label><input id="waterMass" type="range" min=".2" max="5" step=".1" value="1"></div><div class="control"><label><span>Specific heat c</span><b id="waterCVal">4.18 kJ/kg·K</b></label><input id="waterC" type="range" min=".4" max="10" step=".01" value="4.18"></div><div class="result" id="specificReadout"></div><p class="desc">Change Q, mass and specific heat. ΔT = Q/(mc). Ideal model; heat loss ignored.</p>`;
+  ['heatQ','waterMass','waterC'].forEach(id=>$(id).oninput=updateSpecificHeat);updateSpecificHeat();
+ }else if(index===7){
+  $('controls').innerHTML=`<div class="control"><label><span>Rubbing / रगड़ना</span><b id="rubVal">50%</b></label><input id="rub" type="range" min="0" max="100" value="50"></div><div class="result" id="chargeReadout"></div><p class="desc">Rubbing transfers electrons from hair to the balloon. The neutral wall becomes polarized and attracts the charged balloon.</p>`;
+  $('rub').oninput=updateCharge;updateCharge();
+ }else if(index===8){
+  $('controls').innerHTML=`<div class="control"><label><span>Cell voltage</span><b id="cellVVal">1.5 V</b></label><input id="cellV" type="range" min=".5" max="12" step=".1" value="1.5"></div><div class="control"><label><span>Bulb resistance</span><b id="bulbRVal">3 Ω</b></label><input id="bulbR" type="range" min=".5" max="20" step=".1" value="3"></div><div class="result" id="potentialReadout"></div><p class="desc">Potential difference supplies energy per coulomb and drives current around the closed circuit.</p>`;
+  ['cellV','bulbR'].forEach(id=>$(id).oninput=updatePotential);updatePotential();
+ }else if(index===9){
+  $('controls').innerHTML=`<div class="control"><label><span>Supply voltage</span><b id="heaterVVal">230 V</b></label><input id="heaterV" type="range" min="12" max="240" value="230"></div><div class="control"><label><span>Resistance</span><b id="heaterRVal">30 Ω</b></label><input id="heaterR" type="range" min="5" max="100" value="30"></div><div class="result" id="resistanceReadout"></div><p class="desc">Ohm's law: I = V/R; heating power P = V²/R.</p>`;
+  ['heaterV','heaterR'].forEach(id=>$(id).oninput=updateResistance);updateResistance();
+ }else if(index===10){
+  $('controls').innerHTML=`<div class="control"><label><span>Capacitance</span><b id="capCVal">100 μF</b></label><input id="capC" type="range" min="10" max="1000" step="10" value="100"></div><div class="control"><label><span>Supply voltage</span><b id="capVVal">12 V</b></label><input id="capV" type="range" min="1" max="24" value="12"></div><div class="control"><label><span>Charge / discharge</span><b id="capActionVal">Charged</b></label><input id="capAction" type="range" min="0" max="100" value="100"></div><div class="result" id="capacitanceReadout"></div><p class="desc">Reduce the charge slider to discharge the capacitor into the flash tube. U = ½CV².</p>`;
+  ['capC','capV','capAction'].forEach(id=>$(id).oninput=updateCapacitance);updateCapacitance();
  }else if(index===4){
   $('controls').innerHTML=`<div class="control"><label><span>LED colour / LED का रंग</span><b id="ledColourName">Blue</b></label><select id="ledPreset" style="width:100%"><option value="650">Red · 650 nm</option><option value="530">Green · 530 nm</option><option value="450" selected>Blue · 450 nm</option><option value="405">Violet · 405 nm</option></select></div>
   <div class="control"><label><span>Wavelength / तरंगदैर्ध्य</span><b id="waveVal">450 nm</b></label><input id="wavelength" type="range" min="380" max="700" step="1" value="450"></div>
@@ -169,7 +184,7 @@ function makeModel(){
 }
 
 // Real-life teaching models for the six requested concepts.
-let realPulse=0,realParts={};
+let realPulse=0,realParts={},chargeDots=[],circuitDots=[],capacitorDots=[];
 function box(x,y,z,sx,sy,sz,c){let m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material(c));m.position.set(x,y,z);add(m);return m}
 function cylinder(x,y,z,r1,r2,h,c){let m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,32),material(c));m.position.set(x,y,z);add(m);return m}
 let realMeltTarget=0;
@@ -195,20 +210,22 @@ function makeSpecificHeatModel(){
 }
 function makeChargeModel(){
  // Balloon rubbed by hair; negative charges on balloon attract polarized wall charges.
+ chargeDots=[];
  let balloon=new THREE.Mesh(new THREE.SphereGeometry(.62,32,24),new THREE.MeshPhysicalMaterial({color:0xef4f86,roughness:.2,metalness:.08}));balloon.position.set(-.9,.1,0);add(balloon);
  rod([-1.25,-.45,0],[-.55,-.75,0],.045,0xc58b56);for(let i=0;i<7;i++)sphere(-1.35+i*.14,-.82+Math.sin(i)*.1,.08,.07,0xc58b56);
  let wall=box(1.15,0,0,.16,2.5,1.6,0x58728e);
  for(let i=0;i<4;i++)for(let j=0;j<4;j++)sphere(1.02+i*.035,-.8+j*.52,.4,.045,0xff5e72);
- for(let i=0;i<10;i++)sphere(-1.25+(i%4)*.2,-.15+Math.floor(i/4)*.16,.48,.045,0x55d9ff);
+ for(let i=0;i<10;i++){let p=new THREE.Mesh(new THREE.SphereGeometry(.045,16,12),material(0x55d9ff));p.position.set(-1.25+(i%4)*.2,-.15+Math.floor(i/4)*.16,.48);add(p);chargeDots.push(p)}
  realParts={balloon,wall};
 }
 function makePotentialModel(){
  // Cell, wires and torch bulb. Potential difference drives current through the circuit.
+ circuitDots=[];
  box(-1.25,0,0,.62,1.35,.55,0x2b435e);box(-1.25,.78,0,.22,.2,.22,0xff5555);box(-1.25,-.78,0,.22,.2,.22,0x222b39);
  let plus=box(-1.25,.48,.31,.28,.1,.08,0xff5555),minus=box(-1.25,-.48,.31,.28,.1,.08,0x69d5ff);
  rod([-.9,.55,0],[.8,.55,0],.035,0xffbd59);rod([.8,.55,0],[.8,-.55,0],.035,0xffbd59);rod([.8,-.55,0],[-.9,-.55,0],.035,0x69d5ff);
  let bulb=new THREE.Mesh(new THREE.SphereGeometry(.35,24,18),new THREE.MeshPhysicalMaterial({color:0xffe28a,emissive:0xffb52e,emissiveIntensity:.3,transparent:true,opacity:.85}));bulb.position.set(.8,0,0);add(bulb);
- let base=cylinder(.8,-.43,0,.17,.17,.3,0x879bad);realParts={bulb,plus,minus};
+ let base=cylinder(.8,-.43,0,.17,.17,.3,0x879bad);for(let i=0;i<12;i++){let p=new THREE.Mesh(new THREE.SphereGeometry(.045,12,10),material(0x69d5ff));add(p);circuitDots.push(p)}realParts={bulb,plus,minus};
 }
 function makeResistanceModel(){
  // Room heater with glowing resistive coil and protective grille.
@@ -221,22 +238,30 @@ function makeResistanceModel(){
 }
 function makeCapacitanceModel(){
  // Camera flash circuit: capacitor can, flash tube and camera body.
+ capacitorDots=[];
  box(-.45,-.25,0,2.1,1.5,.55,0x334b67);
  cylinder(-.55,-.05,.42,.28,.28,1.0,0xffbd59);
  cylinder(-.55,.48,.42,.12,.12,.12,0x69d5ff);
  let tube=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.85,8,16),new THREE.MeshPhysicalMaterial({color:0xb8edff,emissive:0x52cfff,emissiveIntensity:.25,transparent:true,opacity:.9}));tube.position.set(.75,.2,.42);tube.rotation.z=Math.PI/2;add(tube);
  let lens=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.18,32),material(0x69d5ff));lens.rotation.z=Math.PI/2;lens.position.set(.78,-.45,.42);add(lens);
  let flash=new THREE.PointLight(0x9ceaff,0,5);flash.position.set(.75,.2,.8);add(flash);
- realParts={tube,flash};
+ for(let i=0;i<10;i++){let p=new THREE.Mesh(new THREE.SphereGeometry(.035,12,10),material(0x69d5ff));p.position.set(-.55,-.05,.55);add(p);capacitorDots.push(p)}realParts={tube,flash};
 }
+
+function updateSpecificHeat(){if(index!==6)return;let q=+$('heatQ').value,m=+$('waterMass').value,c=+$('waterC').value,dt=q/(m*c);$('heatQVal').textContent=q+' kJ';$('waterMassVal').textContent=m.toFixed(1)+' kg';$('waterCVal').textContent=c.toFixed(2)+' kJ/kg·K';$('specificReadout').dataset.rise=dt.toFixed(2);$('specificReadout').innerHTML='Temperature rise ΔT: '+dt.toFixed(2)+' K<br>Final temperature (from 20 °C): '+(20+dt).toFixed(2)+' °C<br>Q = mcΔT: '+q.toFixed(1)+' kJ;if(realParts.mercury){let h=.12+Math.min(1,dt/100)*.65;realParts.mercury.scale.y=h;realParts.mercury.position.y=-.72+h*.55}}
+function updateCharge(){if(index!==7)return;let n=+$('rub').value;$('rubVal').textContent=n+'%';$('chargeReadout').innerHTML='Illustrative electron transfer: '+Math.round(n/10)+' units<br>Balloon charge: '+(n?'negative (−)':'neutral')+'<br>Wall: polarized; nearer positive side attracts balloon';chargeDots.forEach((p,i)=>p.visible=i<n/10)}
+function updatePotential(){if(index!==8)return;let v=+$('cellV').value,r=+$('bulbR').value,i=v/r,p=v*i;$('cellVVal').textContent=v.toFixed(1)+' V';$('bulbRVal').textContent=r.toFixed(1)+' Ω';$('potentialReadout').innerHTML='Potential difference: '+v.toFixed(1)+' V<br>Current I = V/R: '+i.toFixed(3)+' A<br>Power P = VI: '+p.toFixed(2)+' W'}
+function updateResistance(){if(index!==9)return;let v=+$('heaterV').value,r=+$('heaterR').value,i=v/r,p=v*v/r;$('heaterVVal').textContent=v+' V';$('heaterRVal').textContent=r+' Ω';$('resistanceReadout').innerHTML='Current I = V/R: '+i.toFixed(2)+' A<br>Power P = V²/R: '+p.toFixed(1)+' W<br>Heat in 60 s (ideal): '+(p*60/1000).toFixed(2)+' kJ'}
+function updateCapacitance(){if(index!==10)return;let c=+$('capC').value,v=+$('capV').value,l=+$('capAction').value/100,q=c*v*l/1000,e=.5*c*1e-6*v*v*l*l;$('capCVal').textContent=c+' μF';$('capVVal').textContent=v+' V';$('capActionVal').textContent=l>.95?'Fully charged':l>.05?'Partially charged':'Discharged';$('capacitanceReadout').innerHTML='Stored charge: '+q.toFixed(3)+' μC<br>Stored energy: '+(e*1000).toFixed(3)+' mJ<br>Charge level: '+Math.round(l*100)+'%'}
+
 function stepRealExamples(dt){
  realPulse+=dt;
  if(index===5&&realParts.ice){const melt=realMeltTarget;realParts.ice.scale.set(1-melt*.42,1-melt*.88,1-melt*.42);realParts.ice.position.y=.05-melt*.28;realParts.ice.material.color.setRGB(0.73-melt*.18,0.94-melt*.25,1-melt*.12);realParts.water.scale.y=1+melt*5.5;realParts.water.position.y=-.84+melt*.38;realParts.water.material.opacity=.82;realParts.heatRings.forEach((r,i)=>{r.scale.setScalar(.75+((realPulse*2+i*.5)%1)*.75);r.material.opacity=.45+.45*Math.abs(Math.sin(realPulse*3+i))});realParts.flame.visible=melt>0; if($('latentReadout'))$('latentReadout').innerHTML='Ice melted / पिघली बर्फ: '+Math.round(melt*100)+'%<br>State / अवस्था: '+(melt>=.98?'Liquid water / पानी':melt<=.02?'Solid ice / ठोस बर्फ':'Ice + water / बर्फ + पानी')+'<br>Temperature during melting / पिघलते समय तापमान: approximately 0 °C'}
- if(index===6&&realParts.mercury){let rise=.2+.22*Math.sin(realPulse*.7);realParts.mercury.scale.y=rise;realParts.mercury.position.y=-.72+rise*.55;realParts.coil.material.emissive?.setHex(0xff642e)}
- if(index===7&&realParts.balloon){realParts.balloon.position.x=-.9+.08*Math.sin(realPulse*1.4)}
- if(index===8&&realParts.bulb){realParts.bulb.material.emissiveIntensity=.35+.25*(1+Math.sin(realPulse*5))}
- if(index===9&&realParts.coil){realParts.coil.material.emissiveIntensity=.7+Math.sin(realPulse*6)*.25;realParts.glow.intensity=1.0+Math.sin(realPulse*6)*.35}
- if(index===10&&realParts.flash){realParts.flash.intensity=Math.max(0,Math.sin(realPulse*1.8)**30*4)}
+ if(index===6&&realParts.mercury){let rise=.12+Math.min(1,(+$('specificReadout')?.dataset?.rise||0)/100)*.65;realParts.mercury.scale.y=rise;realParts.mercury.position.y=-.72+rise*.55;realParts.coil.material.emissive?.setHex(0xff642e)}
+ if(index===7&&realParts.balloon){realParts.balloon.position.x=-.9+.08*Math.sin(realPulse*1.4);chargeDots.forEach((p,i)=>{p.visible=i<(+$('rub')?.value||0)/10;p.position.y=-.15+Math.floor(i/4)*.16+Math.sin(realPulse*2+i)*.015})}
+ if(index===8&&realParts.bulb){let v=+$('cellV')?.value||1.5,r=+$('bulbR')?.value||3;realParts.bulb.material.emissiveIntensity=.12+Math.min(2,v*v/r/12);circuitDots.forEach((p,i)=>{let t=(realPulse*(.25+v/8)+i/12)%1,pts=[[-.9,.55],[.8,.55],[.8,-.55],[-.9,-.55]],seg=Math.min(3,Math.floor(t*4)),f=t*4-seg,a=pts[seg],b=pts[(seg+1)%4];p.position.set(a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,.08)})}
+ if(index===9&&realParts.coil){let v=+$('heaterV')?.value||230,r=+$('heaterR')?.value||30,p=v*v/r;realParts.coil.material.emissiveIntensity=.15+Math.min(2.5,p/600);realParts.glow.intensity=Math.min(3,p/350)}
+ if(index===10&&realParts.flash){let level=(+$('capAction')?.value||0)/100;realParts.flash.intensity=level<.08?Math.max(0,Math.sin(realPulse*1.8)**30*4):0;realParts.tube.material.emissiveIntensity=.15+level*.9;capacitorDots.forEach((p,i)=>{p.visible=i<level*10;p.position.y=-.45+(i%5)*.2})}
 }
 function makePlanckModel(){
  const gold=material(0xffc45c),chip=material(0x315b82),silicon=material(0x1a9b9a);

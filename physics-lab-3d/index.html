@@ -52,6 +52,10 @@ function draw(){
   $('controls').innerHTML=`<div class="control"><label><span>Arm extension / हाथों की दूरी</span><b id="armVal">1.20 m</b></label><input id="arm" type="range" min="0.20" max="1.20" step="0.01" value="1.20"></div><div class="control"><label><span>Weight in each hand / प्रत्येक हाथ का भार</span><b id="handMassVal">1.00 kg</b></label><input id="handMass" type="range" min="0.20" max="3.00" step="0.05" value="1.00"></div><button id="spinReset">Restart spin / फिर से शुरू</button><div class="result" id="spinReadout"></div><p class="desc">हाथ बाहर करने पर I बढ़ता है और घूमने की गति घटती है। हाथ अंदर करने पर I घटता है और गति बढ़ती है। बाहरी torque शून्य मानकर angular momentum स्थिर रखा गया है। / Arms out: higher I, lower speed. Arms in: lower I, higher speed. Angular momentum is conserved (zero external torque).</p>`;
   const syncSpin=()=>{ $('armVal').textContent=(+$('arm').value).toFixed(2)+' m';$('handMassVal').textContent=(+$('handMass').value).toFixed(2)+' kg';updateSpin() };
   $('arm').oninput=syncSpin;$('handMass').oninput=syncSpin;$('spinReset').onclick=()=>{spinState.angle=0;spinState.L=3.0;syncSpin()};syncSpin();
+ }else if(index===5){
+  $('controls').innerHTML=`<div class="control"><label><span>Heat input / दी गई ऊष्मा</span><b id="heatVal">0%</b></label><input id="heatInput" type="range" min="0" max="100" step="1" value="0"></div><button id="meltReset">Reset ice / बर्फ फिर से जमाएँ</button><div class="result" id="latentReadout">Ice: solid · Temperature: 0 °C</div><p class="desc">पीली heat waves बर्फ तक पहुँचती हैं। बर्फ का ठोस टुकड़ा धीरे-धीरे छोटा होगा और नीचे नीला पानी बढ़ेगा। पिघलते समय तापमान लगभग 0 °C रहता है; ऊर्जा अवस्था बदलने में लगती है। / Yellow heat waves warm the ice. The solid ice visibly shrinks as liquid water grows; during melting, temperature stays near 0 °C.</p>`;
+  $('heatInput').oninput=()=>{realMeltTarget=+$('heatInput').value/100;$('heatVal').textContent=$('heatInput').value+'%';};
+  $('meltReset').onclick=()=>{realMeltTarget=0;realPulse=0;$('heatInput').value=0;$('heatVal').textContent='0%';};
  }else if(index===4){
   $('controls').innerHTML=`<div class="control"><label><span>LED colour / LED का रंग</span><b id="ledColourName">Blue</b></label><select id="ledPreset" style="width:100%"><option value="650">Red · 650 nm</option><option value="530">Green · 530 nm</option><option value="450" selected>Blue · 450 nm</option><option value="405">Violet · 405 nm</option></select></div>
   <div class="control"><label><span>Wavelength / तरंगदैर्ध्य</span><b id="waveVal">450 nm</b></label><input id="wavelength" type="range" min="380" max="700" step="1" value="450"></div>
@@ -168,13 +172,17 @@ function makeModel(){
 let realPulse=0,realParts={};
 function box(x,y,z,sx,sy,sz,c){let m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material(c));m.position.set(x,y,z);add(m);return m}
 function cylinder(x,y,z,r1,r2,h,c){let m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,32),material(c));m.position.set(x,y,z);add(m);return m}
+let realMeltTarget=0;
 function makeLatentHeatModel(){
- // Transparent beaker, ice cube and water level.
- cylinder(-.45,-.1,0,.85,.85,1.45,0x80c9ed).material.transparent=true;cylinder(-.45,-.1,0,.85,.85,1.45,0x80c9ed).material.opacity=.12;
- let water=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,.7,40),new THREE.MeshPhysicalMaterial({color:0x35aeea,transparent:true,opacity:.55,roughness:.12}));water.position.set(-.45,-.58,0);add(water);
- let ice=new THREE.Mesh(new THREE.BoxGeometry(.62,.62,.62),new THREE.MeshPhysicalMaterial({color:0xb9efff,transparent:true,opacity:.9,roughness:.18}));ice.position.set(-.45,.12,0);add(ice);
- for(let i=0;i<4;i++){let b=sphere(-.45+(i%2)*.2-.1,.8+Math.floor(i/2)*.16,(i%2)*.12,.045,0xffbd59);b.material.emissive.setHex(0xff8b25);b.material.emissiveIntensity=.5}
- realParts={ice,water}; 
+ // A clearly visible ice cube above a growing pool in a transparent beaker.
+ let glass=new THREE.Mesh(new THREE.CylinderGeometry(.88,.88,1.65,48,1,true),new THREE.MeshPhysicalMaterial({color:0x80c9ed,transparent:true,opacity:.22,roughness:.08,side:THREE.DoubleSide}));glass.position.set(-.45,-.12,0);add(glass);
+ let bottom=new THREE.Mesh(new THREE.CylinderGeometry(.86,.86,.07,48),material(0x9bcde2));bottom.position.set(-.45,-.96,0);add(bottom);
+ let water=new THREE.Mesh(new THREE.CylinderGeometry(.76,.76,.16,48),new THREE.MeshPhysicalMaterial({color:0x168ed0,transparent:true,opacity:.82,roughness:.08}));water.position.set(-.45,-.84,0);add(water);
+ let ice=new THREE.Mesh(new THREE.BoxGeometry(.66,.66,.66),new THREE.MeshPhysicalMaterial({color:0xb9efff,emissive:0x225577,emissiveIntensity:.18,transparent:true,opacity:.96,roughness:.12}));ice.position.set(-.45,.05,0);add(ice);
+ // Bright yellow heat waves and arrows make the energy input obvious.
+ let heatRings=[];for(let i=0;i<4;i++){let ring=new THREE.Mesh(new THREE.TorusGeometry(.18+i*.08,.025,8,32),new THREE.MeshBasicMaterial({color:0xffa52e,transparent:true,opacity:.9}));ring.position.set(-.45,-1.18,.25);ring.rotation.x=Math.PI/2;add(ring);heatRings.push(ring)}
+ let flame=new THREE.Mesh(new THREE.ConeGeometry(.22,.52,20),new THREE.MeshBasicMaterial({color:0xff6b24,transparent:true,opacity:.9}));flame.position.set(-.45,-1.35,.28);add(flame);
+ realParts={ice,water,heatRings,flame,glass};realMeltTarget=0;
 }
 function makeSpecificHeatModel(){
  // Electric kettle with visible water and thermometer.
@@ -223,7 +231,7 @@ function makeCapacitanceModel(){
 }
 function stepRealExamples(dt){
  realPulse+=dt;
- if(index===5&&realParts.ice){let melt=Math.min(.85,realPulse*.035);realParts.ice.scale.setScalar(1-melt*.65);realParts.ice.position.y=.12-melt*.18;realParts.water.scale.y=1+melt*.8}
+ if(index===5&&realParts.ice){const melt=realMeltTarget;realParts.ice.scale.set(1-melt*.42,1-melt*.88,1-melt*.42);realParts.ice.position.y=.05-melt*.28;realParts.ice.material.color.setRGB(0.73-melt*.18,0.94-melt*.25,1-melt*.12);realParts.water.scale.y=1+melt*5.5;realParts.water.position.y=-.84+melt*.38;realParts.water.material.opacity=.82;realParts.heatRings.forEach((r,i)=>{r.scale.setScalar(.75+((realPulse*2+i*.5)%1)*.75);r.material.opacity=.45+.45*Math.abs(Math.sin(realPulse*3+i))});realParts.flame.visible=melt>0; if($('latentReadout'))$('latentReadout').innerHTML='Ice melted / पिघली बर्फ: '+Math.round(melt*100)+'%<br>State / अवस्था: '+(melt>=.98?'Liquid water / पानी':melt<=.02?'Solid ice / ठोस बर्फ':'Ice + water / बर्फ + पानी')+'<br>Temperature during melting / पिघलते समय तापमान: approximately 0 °C'}
  if(index===6&&realParts.mercury){let rise=.2+.22*Math.sin(realPulse*.7);realParts.mercury.scale.y=rise;realParts.mercury.position.y=-.72+rise*.55;realParts.coil.material.emissive?.setHex(0xff642e)}
  if(index===7&&realParts.balloon){realParts.balloon.position.x=-.9+.08*Math.sin(realPulse*1.4)}
  if(index===8&&realParts.bulb){realParts.bulb.material.emissiveIntensity=.35+.25*(1+Math.sin(realPulse*5))}

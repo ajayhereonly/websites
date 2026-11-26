@@ -199,8 +199,22 @@ function stepViscosity(dt){
   p.userData.trail.position.copy(p.position);
   p.userData.trail.position.x-=.12;
   p.userData.trail.scale.x=.65+layer*.75;
- }
+ });
 }
+function makeSpinningChair(){
+ const steel=material(0x91a8bd),fabric=material(0x2476a5),skin=material(0xe9b58b),shirt=material(0x69d5ff),gold=material(0xffbd59);
+ spinGroup=new THREE.Group();obj.add(spinGroup);spinWeights=[];spinArms=[];
+ rod([0,-1.45,0],[0,-.72,0],.09,0x9aafc4);let seat=new THREE.Mesh(new THREE.CylinderGeometry(.65,.65,.16,40),fabric);seat.position.y=-.68;spinGroup.add(seat);
+ let back=new THREE.Mesh(new THREE.BoxGeometry(.12,.95,.85),fabric);back.position.set(-.52,-.1,0);spinGroup.add(back);
+ for(let i=0;i<5;i++){let a=i*Math.PI*2/5;rod([0,-1.42,0],[Math.cos(a)*.72,-1.42,Math.sin(a)*.72],.045,0x91a8bd);let caster=new THREE.Mesh(new THREE.SphereGeometry(.09,12,10),steel);caster.position.set(Math.cos(a)*.72,-1.48,Math.sin(a)*.72);spinGroup.add(caster)}
+ let torso=new THREE.Mesh(new THREE.CapsuleGeometry(.28,.75,8,16),shirt);torso.position.y=.08;spinGroup.add(torso);let head=new THREE.Mesh(new THREE.SphereGeometry(.24,24,18),skin);head.position.y=.72;spinGroup.add(head);
+ let legs=new THREE.Mesh(new THREE.BoxGeometry(.55,.18,.48),material(0x263b52));legs.position.set(.12,-.48,0);spinGroup.add(legs);
+ for(let side of [-1,1]){let arm=new THREE.Group();arm.position.set(0,.35,0);spinGroup.add(arm);let upper=new THREE.Mesh(new THREE.CylinderGeometry(.09,.12,.48,16),shirt);upper.rotation.z=side*Math.PI/2;upper.position.x=side*.25;arm.add(upper);let fore=new THREE.Mesh(new THREE.CylinderGeometry(.075,.09,.42,16),shirt);fore.rotation.z=side*Math.PI/2;fore.position.x=side*.68;arm.add(fore);let weight=new THREE.Mesh(new THREE.SphereGeometry(.14,20,16),gold);arm.add(weight);spinArms.push({arm,side,weight});spinWeights.push(weight)}
+ updateSpin();
+}
+function spinInertia(){let r=+$('arm')?.value||1.2,m=+$('handMass')?.value||1;return .9+2*m*r*r}
+function updateSpin(){if(index!==2||!$('arm'))return;let r=+$('arm').value,m=+$('handMass').value,I=spinInertia(),omega=spinState.L/I;spinArms.forEach(({arm,side,weight})=>{arm.position.x=side*.16;arm.rotation.z=side*(r-1.2)*.12;weight.position.set(side*r,.0,0)});$('spinReadout').innerHTML='Moment of inertia / जड़त्व आघूर्ण: '+I.toFixed(3)+' kg·m²<br>Angular momentum / कोणीय संवेग: '+spinState.L.toFixed(2)+' kg·m²/s<br>Angular speed / कोणीय वेग: '+omega.toFixed(2)+' rad/s<br>External torque / बाहरी बल आघूर्ण: 0 N·m';}
+function stepSpin(dt){if(index!==2||!spinGroup||!$('arm'))return;spinGroup.rotation.y+=spinState.L/spinInertia()*dt;}
 function makeBicycle(){
  // Full bicycle side view; front wheel rotates around its hub.
  const frame=material(0x69d5ff),metal=material(0xc5d5e8),rubber=material(0x246b91),black=material(0x172536);

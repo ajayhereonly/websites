@@ -23,20 +23,129 @@ const D=[
 ['Electric Resistance','विद्युत प्रतिरोध','R = V / I','प्रतिरोध = विभवांतर ÷ धारा','Opposition to electric current. / विद्युत धारा का विरोध।',[['Voltage V','वोल्टेज V',12,.1,50,'V'],['Current I','धारा I',2,.1,10,'A']],v=>v[0]/v[1],'Ω',[['Toaster','A resistive element converts electrical energy into heat.'],['Long wire','Longer or thinner wire has greater resistance.'],['Dimmer','Changing resistance changes current for a given voltage.']]],
 ['Electric Capacitance','विद्युत धारिता','C = Q / V','धारिता = आवेश ÷ विभवांतर','Ability to store charge per unit potential difference. / प्रति इकाई विभवांतर आवेश संग्रह क्षमता।',[['Charge Q','आवेश Q',20,.1,100,'μC'],['Voltage V','वोल्टेज V',10,.1,100,'V']],v=>v[0]/v[1],'μF',[['Camera flash','A capacitor stores energy and releases it quickly for a flash.'],['Touch screen','Capacitive screens sense changes when a finger approaches.'],['Power supply','Capacitors smooth voltage fluctuations in circuits.']]]
 ];
-let index=0,lang='both',auto=true,torqueMode='door',torquePivot=null,torqueKnob=null,scene,camera,renderer,obj,rx=.3,ry=.4,zoom=1,drag=false,lastX=0,lastY=0;
+let index=0,lang='both',auto=false,torqueMode='door',torquePivot=null,torqueKnob=null,scene,camera,renderer,obj,rx=.08,ry=0,zoom=1,drag=false,lastX=0,lastY=0,lastFrame=performance.now();\nlet doorState={angle:0,omega:0,force:0,torque:0,dragging:false,lastX:0,lastT:0};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const $=id=>document.getElementById(id),fmt=n=>!isFinite(n)?'—':n!==0&&(Math.abs(n)<.001||Math.abs(n)>=1e6)?n.toExponential(3):Number(n.toPrecision(4)).toString();
 function topicList(){$('topics').innerHTML=D.map((d,i)=>'<button class="topic '+(i===index?'active':'')+'" data-i="'+i+'">'+d[0]+'<small>'+d[1]+'</small></button>').join('');document.querySelectorAll('.topic').forEach(b=>b.onclick=()=>{index=+b.dataset.i;draw()})}
-function draw(){topicList();let d=D[index];$('title').textContent=lang==='hi'?d[1]:d[0];$('desc').textContent=d[4];$('formula').textContent=d[2];$('formulaHi').textContent=d[3];$('examples').innerHTML=d[8].map((e,i)=>'<option value="'+i+'">'+e[0]+'</option>').join('');$('exampleText').textContent=d[8][0][1];$('examples').onchange=()=>{$('exampleText').textContent=d[8][+$('examples').value][1];makeModel()};$('doorMode').style.display=index===0?'inline-block':'none';$('wrenchMode').style.display=index===0?'inline-block':'none';$('controls').innerHTML=index===0?`<div class="control"><label><span>Force / लगाया गया बल</span><b id="val0">20 N</b></label><input id="force" type="range" min="1" max="50" value="20"></div><div class="control"><label><span>Knob distance from hinge / कब्जे से दूरी</span><b id="val1">0.80 m</b></label><input id="distance" type="range" min=".2" max="1.8" step=".05" value=".8"></div><div class="control"><label><span>Force angle / बल का कोण</span><b id="val2">90°</b></label><input id="angle" type="range" min="0" max="180" step="5" value="90"></div><p class="desc" id="torqueHint">Move the knob along the door. A push perpendicular to the door gives maximum torque. / knob को दरवाज़े पर आगे-पीछे करें। लंबवत बल से torque अधिकतम होता है।</p>` : d[5].map((v,i)=>'<div class="control"><label><span>'+(lang==='hi'?v[1]:v[0])+'</span><b id="val'+i+'">'+fmt(v[2])+' '+v[5]+'</b></label><input type="range" min="'+v[3]+'" max="'+v[4]+'" step="'+((v[4]-v[3])/300)+'" value="'+v[2]+'" data-i="'+i+'"></div>').join('');document.querySelectorAll('.control input').forEach(el=>el.oninput=()=>update());$('doorMode').onclick=()=>{torqueMode='door';$('doorMode').classList.add('on');$('wrenchMode').classList.remove('on');makeModel();update()};$('wrenchMode').onclick=()=>{torqueMode='wrench';$('wrenchMode').classList.add('on');$('doorMode').classList.remove('on');makeModel();update()};$('doorMode').classList.toggle('on',torqueMode==='door');$('wrenchMode').classList.toggle('on',torqueMode==='wrench');makeModel();update()}
+function draw(){
+ topicList();let d=D[index];
+ $('title').textContent=lang==='hi'?d[1]:d[0];$('desc').textContent=d[4];$('formula').textContent=d[2];$('formulaHi').textContent=d[3];
+ $('examples').innerHTML=d[8].map((e,i)=>'<option value="'+i+'">'+e[0]+'</option>').join('');
+ $('exampleText').textContent=d[8][0][1];$('examples').onchange=()=>{$('exampleText').textContent=d[8][+$('examples').value][1];makeModel()};
+ $('doorMode').style.display=index===0?'inline-block':'none';$('wrenchMode').style.display=index===0?'inline-block':'none';
+ if(index===0){
+  $('controls').innerHTML=`<div class="control"><label><span>Knob distance from hinge / कब्जे से दूरी</span><b id="val1">0.80 m</b></label><input id="distance" type="range" min=".2" max="1.8" step=".05" value=".8"></div>
+  <div class="control"><label><span>Door mass / दरवाज़े का द्रव्यमान</span><b id="massVal">20 kg</b></label><input id="mass" type="range" min="5" max="50" step="1" value="20"></div>
+  <div class="control"><label><span>Hinge friction / कब्जे का घर्षण</span><b id="frictionVal">0.15</b></label><input id="friction" type="range" min="0" max="1" step=".05" value=".15"></div>
+  <p class="desc">सुनहरे door knob को उंगली/mouse से पकड़कर बाएँ या दाएँ धक्का दें। छोड़ने पर दरवाज़ा inertia और hinge friction के अनुसार चलता रहेगा। / Drag the gold knob left or right, then release. The door continues moving according to inertia and hinge friction.</p>
+  <div class="result" id="doorReadout">Door angle: 0° | Angular speed: 0 rad/s | Torque: 0 N·m</div>`;
+  $('distance').oninput=()=>{$('val1').textContent=(+$('distance').value).toFixed(2)+' m';positionKnob()};
+  $('mass').oninput=()=>$('massVal').textContent=$('mass').value+' kg';
+  $('friction').oninput=()=>$('frictionVal').textContent=$('friction').value;
+ }else{
+  $('controls').innerHTML=d[5].map((v,i)=>'<div class="control"><label><span>'+(lang==='hi'?v[1]:v[0])+'</span><b id="val'+i+'">'+fmt(v[2])+' '+v[5]+'</b></label><input type="range" min="'+v[3]+'" max="'+v[4]+'" step="'+((v[4]-v[3])/300)+'" value="'+v[2]+'" data-i="'+i+'"></div>').join('');
+  document.querySelectorAll('.control input').forEach(el=>el.oninput=()=>update());
+ }
+ $('doorMode').onclick=()=>{torqueMode='door';$('doorMode').classList.add('on');$('wrenchMode').classList.remove('on');makeModel()};
+ $('wrenchMode').onclick=()=>{torqueMode='wrench';$('wrenchMode').classList.add('on');$('doorMode').classList.remove('on');makeModel()};
+ $('doorMode').classList.toggle('on',torqueMode==='door');$('wrenchMode').classList.toggle('on',torqueMode==='wrench');
+ makeModel();
+}
+
 function values(){return [...document.querySelectorAll('.control input')].map(x=>+x.value)}
-function update(){let d=D[index],v=values();if(index===0){let F=v[0],r=v[1],a=v[2],torque=F*r*Math.sin(a*Math.PI/180);$('val0').textContent=F+' N';$('val1').textContent=r.toFixed(2)+' m';$('val2').textContent=a+'°';$('result').textContent='Torque / बल आघूर्ण: '+fmt(torque)+' N·m';if($('torqueHint'))$('torqueHint').textContent=(torque>.01?'The door rotates because the push creates torque. / बल के कारण दरवाज़ा घूमता है।':'At this angle, the turning effect is zero. / इस कोण पर घुमाने वाला प्रभाव शून्य है।')+' Move the knob farther from the hinge to increase torque. / knob को कब्जे से दूर करने पर torque बढ़ता है।';if(torquePivot){if(torqueMode==='door'){torqueKnob.position.x=r*1.65;torquePivot.rotation.y=Math.max(-1.05,Math.min(1.05,torque/90))}else{torquePivot.scale.x=.45+r*.5;torquePivot.rotation.z=Math.max(-.9,Math.min(.9,torque/90))}}return}v.forEach((n,i)=>$('val'+i).textContent=fmt(n)+' '+d[5][i][5]);$('result').textContent='Calculated result / परिकलित मान: '+fmt(d[6](v))+' '+d[7];if(obj){let norm=(n,i)=>Math.max(0,Math.min(1,(n-d[5][i][3])/(d[5][i][4]-d[5][i][3])));obj.scale.set(.7+norm(v[0],0)*.8,.7+norm(v[Math.min(1,v.length-1)],Math.min(1,v.length-1))*.8,1);obj.rotation.z=(v[2]||0)*Math.PI/180*.12}}
+function update(){
+ let d=D[index],v=values();
+ if(index===0){positionKnob();return}
+ v.forEach((n,i)=>$('val'+i).textContent=fmt(n)+' '+d[5][i][5]);
+ $('result').textContent='Calculated result / परिकलित मान: '+fmt(d[6](v))+' '+d[7];
+ if(obj){let norm=(n,i)=>Math.max(0,Math.min(1,(n-d[5][i][3])/(d[5][i][4]-d[5][i][3])));obj.scale.set(.7+norm(v[0],0)*.8,.7+norm(v[Math.min(1,v.length-1)],Math.min(1,v.length-1))*.8,1);obj.rotation.z=(v[2]||0)*Math.PI/180*.12}
+}
+
 $('language').onclick=()=>{lang=lang==='both'?'hi':lang==='hi'?'en':'both';$('language').textContent=lang==='both'?'हिंदी + English':lang==='hi'?'हिंदी':'English';draw()};
-function init(){let c=$('view');scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.z=7;renderer=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));scene.add(new THREE.AmbientLight(0xffffff,1.5));let l=new THREE.DirectionalLight(0xffffff,2);l.position.set(4,5,6);scene.add(l);resize();window.addEventListener('resize',resize);c.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;c.setPointerCapture(e.pointerId)});c.addEventListener('pointerup',()=>drag=false);c.addEventListener('pointermove',e=>{if(drag){ry+=(e.clientX-lastX)*.01;rx+=(e.clientY-lastY)*.01;lastX=e.clientX;lastY=e.clientY}});c.addEventListener('wheel',e=>{zoom=Math.max(.55,Math.min(2.5,zoom-e.deltaY*.001));e.preventDefault()},{passive:false});animate()}
+function init(){
+ let c=$('view');scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.set(0,.1,8.2);
+ renderer=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+ scene.add(new THREE.AmbientLight(0xffffff,1.5));let l=new THREE.DirectionalLight(0xffffff,2);l.position.set(4,5,6);scene.add(l);resize();window.addEventListener('resize',resize);
+ c.style.touchAction='none';
+ c.addEventListener('pointerdown',e=>{
+  if(index===0&&torqueMode==='door'&&torqueKnob){
+   const rect=c.getBoundingClientRect();pointer.x=((e.clientX-rect.left)/rect.width)*2-1;pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;
+   raycaster.setFromCamera(pointer,camera);
+   if(raycaster.intersectObject(torqueKnob,true).length){doorState.dragging=true;doorState.lastX=e.clientX;doorState.lastT=performance.now();doorState.force=0;c.setPointerCapture(e.pointerId);e.preventDefault();return}
+  }
+  drag=true;lastX=e.clientX;lastY=e.clientY;c.setPointerCapture(e.pointerId);
+ });
+ c.addEventListener('pointermove',e=>{
+  if(doorState.dragging){let now=performance.now(),dt=Math.max(.008,(now-doorState.lastT)/1000),dx=e.clientX-doorState.lastX;doorState.force=Math.max(-50,Math.min(50,dx/dt*.12));doorState.lastX=e.clientX;doorState.lastT=now;e.preventDefault();return}
+  if(drag){ry+=(e.clientX-lastX)*.008;rx+=(e.clientY-lastY)*.008;lastX=e.clientX;lastY=e.clientY}
+ });
+ const release=()=>{doorState.dragging=false;doorState.force=0;drag=false};
+ c.addEventListener('pointerup',release);c.addEventListener('pointercancel',release);
+ c.addEventListener('wheel',e=>{zoom=Math.max(.55,Math.min(2.5,zoom-e.deltaY*.001));e.preventDefault()},{passive:false});
+ animate();
+}
+
 function resize(){let w=$('view').clientWidth,h=$('view').clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 function material(c){return new THREE.MeshStandardMaterial({color:c,metalness:.35,roughness:.3})}
 function add(mesh){obj.add(mesh)}
 function sphere(x,y,z,r,c){let m=new THREE.Mesh(new THREE.SphereGeometry(r,28,20),material(c));m.position.set(x,y,z);add(m)}
 function rod(a,b,r,c){let A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),16),material(c));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());add(m)}
-function makeModel(){if(obj){scene.remove(obj);obj.traverse(o=>{o.geometry?.dispose();o.material?.dispose()})}obj=new THREE.Group();scene.add(obj);let k=index;if(k===0){if(torqueMode==='door'){rod([-1.6,-1.35,0],[-1.6,1.35,0],.09,0xffffff);torquePivot=new THREE.Group();torquePivot.position.x=-1.6;obj.add(torquePivot);let panel=new THREE.Mesh(new THREE.BoxGeometry(3.1,2.45,.16),material(0x377da7));panel.position.x=1.55;torquePivot.add(panel);for(let y of [-1.05,1.05]){let h=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.25,16),material(0xffbd59));h.position.y=y;torquePivot.add(h)}torqueKnob=new THREE.Group();torquePivot.add(torqueKnob);let stem=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.25,16),material(0xddeaff));stem.rotation.z=Math.PI/2;stem.position.set(0,0,.1);torqueKnob.add(stem);let knob=new THREE.Mesh(new THREE.SphereGeometry(.13,24,18),material(0xffbd59));knob.position.z=.22;torqueKnob.add(knob)}else{sphere(-1.1,0,0,.32,0xffbd59);let nut=new THREE.Mesh(new THREE.TorusGeometry(.42,.11,16,48),material(0xffbd59));nut.position.x=-1.1;add(nut);torquePivot=new THREE.Group();torquePivot.position.x=-1.1;obj.add(torquePivot);let shaft=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,2.5,24),material(0x69d5ff));shaft.rotation.z=-Math.PI/2;shaft.position.x=1.25;torquePivot.add(shaft);let tip=new THREE.Mesh(new THREE.SphereGeometry(.16,20,16),material(0xddeaff));tip.position.x=2.5;torquePivot.add(tip)}}else if(k===1||k===2){rod([0,-1.6,0],[0,1.6,0],.05,0xffffff);for(let i=0;i<8;i++){let a=i*Math.PI/4;sphere(Math.cos(a)*1.3,Math.sin(a)*1.3,0,.16,0x69d5ff)}}else if(k===3){for(let y=-1.2;y<=1.2;y+=.4){let m=new THREE.Mesh(new THREE.BoxGeometry(3,.025,.9),material(y===-1.2?0xffbd59:0x377da7));m.position.y=y;add(m)}for(let i=0;i<6;i++)sphere(-1+i*.4,0,.15,.09,0x69d5ff)}else if(k===4){sphere(0,0,0,.6,0xffbd59);for(let i=0;i<3;i++){let t=new THREE.Mesh(new THREE.TorusGeometry(1.1+i*.25,.025,8,80),material(0x69d5ff));t.rotation.x=Math.PI/2;t.rotation.y=i*.6;add(t)}}else if(k===5||k===6){let m=new THREE.Mesh(new THREE.BoxGeometry(1.7,1.7,1.7),material(k===5?0x69d5ff:0xffbd59));add(m);for(let i=0;i<8;i++)sphere(-.6+(i%4)*.4,-.4+Math.floor(i/4)*.7,.9,.08,0xffffff)}else if(k===7||k===8){sphere(-1,0,0,.4,0xff5c7a);sphere(1,0,0,.4,0x69d5ff);for(let i=-2;i<=2;i++)rod([-1.5,i*.35,0],[1.5,i*.35,0],.012,0x9ab4d0)}else if(k===9){rod([-1.8,0,0],[-.6,0,0],.09,0x69d5ff);for(let i=0;i<5;i++)rod([-.6+i*.24,0,0],[-.36+i*.24,.45,0],.05,0xffbd59);rod([.6,0,0],[1.8,0,0],.09,0x69d5ff)}else{for(let x of [-.8,.8]){let p=new THREE.Mesh(new THREE.BoxGeometry(.12,2,.9),material(0xffbd59));p.position.x=x;add(p)}for(let i=0;i<7;i++)sphere(-.55+i*.18,0,.2,.07,0x69d5ff)}update()}
-function animate(){requestAnimationFrame(animate);if(auto)ry+=.004;if(obj){obj.rotation.x=rx;obj.rotation.y=ry}camera.position.z=7/zoom;renderer.render(scene,camera)}
+function makeModel(){
+ if(obj){scene.remove(obj);obj.traverse(o=>{o.geometry?.dispose();o.material?.dispose()})}
+ obj=new THREE.Group();scene.add(obj);doorState.angle=0;doorState.omega=0;doorState.force=0;let k=index;
+ if(k===0){
+  if(torqueMode==='door'){
+   // House front: wall wings, lintel, threshold and an operable hinged door.
+   const leftWall=new THREE.Mesh(new THREE.BoxGeometry(1.45,3.55,.2),material(0x263b52));leftWall.position.set(-2.33,0,-.35);add(leftWall);
+   const rightWall=new THREE.Mesh(new THREE.BoxGeometry(1.45,3.55,.2),material(0x263b52));rightWall.position.set(2.33,0,-.35);add(rightWall);
+   const lintel=new THREE.Mesh(new THREE.BoxGeometry(3.25,.38,.2),material(0x263b52));lintel.position.set(0,1.58,-.35);add(lintel);
+   const trim=material(0xd5b78a);
+   for(let x of [-1.62,1.62]){let f=new THREE.Mesh(new THREE.BoxGeometry(.14,2.9,.32),trim);f.position.set(x,0,0);add(f)}
+   let top=new THREE.Mesh(new THREE.BoxGeometry(3.35,.14,.32),trim);top.position.y=1.45;add(top);
+   let sill=new THREE.Mesh(new THREE.BoxGeometry(3.35,.12,.42),material(0xf1d7a7));sill.position.set(0,-1.45,.02);add(sill);
+   torquePivot=new THREE.Group();torquePivot.position.set(-1.55,0,.12);add(torquePivot);
+   let panel=new THREE.Mesh(new THREE.BoxGeometry(3.05,2.7,.14),material(0x377da7));panel.position.x=1.525;torquePivot.add(panel);
+   for(let y of [-1.1,1.1]){let h=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.22,18),material(0xffbd59));h.position.y=y;torquePivot.add(h)}
+   torqueKnob=new THREE.Group();torquePivot.add(torqueKnob);
+   let plate=new THREE.Mesh(new THREE.BoxGeometry(.22,.48,.04),material(0x9fb4c9));plate.position.set(2.7,0,.1);torqueKnob.add(plate);
+   let stem=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.24,18),material(0xe6edf5));stem.rotation.z=Math.PI/2;stem.position.set(2.72,0,.13);torqueKnob.add(stem);
+   let knob=new THREE.Mesh(new THREE.SphereGeometry(.15,24,18),material(0xffbd59));knob.position.set(2.86,0,.2);knob.name='touchable-knob';torqueKnob.add(knob);
+   positionKnob();
+  }else{
+   sphere(-1.1,0,0,.32,0xffbd59);let nut=new THREE.Mesh(new THREE.TorusGeometry(.42,.11,16,48),material(0xffbd59));nut.position.x=-1.1;add(nut);
+   torquePivot=new THREE.Group();torquePivot.position.x=-1.1;add(torquePivot);
+   let shaft=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,2.5,24),material(0x69d5ff));shaft.rotation.z=-Math.PI/2;shaft.position.x=1.25;torquePivot.add(shaft);
+   let tip=new THREE.Mesh(new THREE.SphereGeometry(.16,20,16),material(0xddeaff));tip.position.x=2.5;torquePivot.add(tip);
+  }
+ }else if(k===1||k===2){rod([0,-1.6,0],[0,1.6,0],.05,0xffffff);for(let i=0;i<8;i++){let a=i*Math.PI/4;sphere(Math.cos(a)*1.3,Math.sin(a)*1.3,0,.16,0x69d5ff)}}
+ else if(k===3){for(let y=-1.2;y<=1.2;y+=.4){let m=new THREE.Mesh(new THREE.BoxGeometry(3,.025,.9),material(y===-1.2?0xffbd59:0x377da7));m.position.y=y;add(m)}for(let i=0;i<6;i++)sphere(-1+i*.4,0,.15,.09,0x69d5ff)}
+ else if(k===4){sphere(0,0,0,.6,0xffbd59);for(let i=0;i<3;i++){let t=new THREE.Mesh(new THREE.TorusGeometry(1.1+i*.25,.025,8,80),material(0x69d5ff));t.rotation.x=Math.PI/2;t.rotation.y=i*.6;add(t)}}
+ else if(k===5||k===6){let m=new THREE.Mesh(new THREE.BoxGeometry(1.7,1.7,1.7),material(k===5?0x69d5ff:0xffbd59));add(m);for(let i=0;i<8;i++)sphere(-.6+(i%4)*.4,-.4+Math.floor(i/4)*.7,.9,.08,0xffffff)}
+ else if(k===7||k===8){sphere(-1,0,0,.4,0xff5c7a);sphere(1,0,0,.4,0x69d5ff);for(let i=-2;i<=2;i++)rod([-1.5,i*.35,0],[1.5,i*.35,0],.012,0x9ab4d0)}
+ else if(k===9){rod([-1.8,0,0],[-.6,0,0],.09,0x69d5ff);for(let i=0;i<5;i++)rod([-.6+i*.24,0,0],[-.36+i*.24,.45,0],.05,0xffbd59);rod([.6,0,0],[1.8,0,0],.09,0x69d5ff)}
+ else{for(let x of [-.8,.8]){let p=new THREE.Mesh(new THREE.BoxGeometry(.12,2,.9),material(0xffbd59));p.position.x=x;add(p)}for(let i=0;i<7;i++)sphere(-.55+i*.18,0,.2,.07,0x69d5ff)}
+ update();
+}
+function positionKnob(){if(!torqueKnob||!$('distance'))return;let x=Math.max(.33,Math.min(2.9,(+$('distance').value||.8)*1.62));torqueKnob.position.x=x-2.86}
+function stepDoorPhysics(dt){
+ if(index!==0||torqueMode!=='door'||!torquePivot)return;
+ const width=3.05,mass=+$('mass').value||20,mu=+$('friction').value||0,r=+$('distance').value||.8;
+ const inertia=mass*width*width/3,appliedTorque=doorState.force*r;
+ const frictionTorque=mu*inertia*.55*Math.sign(doorState.omega)+mu*inertia*.35*doorState.omega;
+ const net=appliedTorque-frictionTorque,alpha=net/inertia;
+ doorState.omega+=alpha*dt;
+ if(!doorState.dragging&&Math.abs(doorState.omega)<mu*.025){doorState.omega=0}
+ doorState.angle+=doorState.omega*dt;
+ doorState.angle=Math.max(-1.25,Math.min(1.25,doorState.angle));if(Math.abs(doorState.angle)>=1.25)doorState.omega=0;
+ doorState.torque=appliedTorque;torquePivot.rotation.y=-doorState.angle;
+ $('doorReadout').textContent='Door angle: '+(doorState.angle*180/Math.PI).toFixed(1)+'° | Angular speed: '+doorState.omega.toFixed(2)+' rad/s | Applied torque: '+appliedTorque.toFixed(2)+' N·m | Drag force: '+doorState.force.toFixed(1)+' N';
+}
+
+function animate(){
+ requestAnimationFrame(animate);const now=performance.now(),dt=Math.min(.035,(now-lastFrame)/1000);lastFrame=now;
+ if(auto&&!(index===0&&torqueMode==='door'))ry+=.004;
+ stepDoorPhysics(dt);
+ if(obj){obj.rotation.x=rx;obj.rotation.y=ry}camera.position.z=8.2/zoom;renderer.render(scene,camera);
+}
+
 $('rotate').onclick=()=>{auto=!auto;$('rotate').textContent='Auto rotate: '+(auto?'ON':'OFF');$('rotate').classList.toggle('on',auto)};$('reset').onclick=()=>{rx=.3;ry=.4;zoom=1};init();draw();
 </script></body></html>

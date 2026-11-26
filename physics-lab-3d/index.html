@@ -24,7 +24,7 @@ const D=[
 ['Electric Capacitance','विद्युत धारिता','C = Q / V','धारिता = आवेश ÷ विभवांतर','Ability to store charge per unit potential difference. / प्रति इकाई विभवांतर आवेश संग्रह क्षमता।',[['Charge Q','आवेश Q',20,.1,100,'μC'],['Voltage V','वोल्टेज V',10,.1,100,'V']],v=>v[0]/v[1],'μF',[['Camera flash','A capacitor stores energy and releases it quickly for a flash.'],['Touch screen','Capacitive screens sense changes when a finger approaches.'],['Power supply','Capacitors smooth voltage fluctuations in circuits.']]]
 ];
 let index=0,lang='both',auto=false,torqueMode='door',torquePivot=null,torqueKnob=null,scene,camera,renderer,obj,rx=.08,ry=0,zoom=1,drag=false,lastX=0,lastY=0,lastFrame=performance.now();
-let doorState={angle:0,omega:0,force:0,torque:0,dragging:false,lastX:0,lastT:0};let bikeWheel=null,bikeTyre=null,bikeWeights=[],bikeState={angle:0,omega:0};let spinGroup=null,spinWeights=[],spinArms=[],spinState={angle:0,L:3.0};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+let doorState={angle:0,omega:0,force:0,torque:0,dragging:false,lastX:0,lastT:0};let bikeWheel=null,bikeTyre=null,bikeWeights=[],bikeState={angle:0,omega:0};let fluidParticles=[],fluidTopPlate=null,fluidFlowTime=0;let spinGroup=null,spinWeights=[],spinArms=[],spinState={angle:0,L:3.0};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const $=id=>document.getElementById(id),fmt=n=>!isFinite(n)?'—':n!==0&&(Math.abs(n)<.001||Math.abs(n)>=1e6)?n.toExponential(3):Number(n.toPrecision(4)).toString();
 function topicList(){$('topics').innerHTML=D.map((d,i)=>'<button class="topic '+(i===index?'active':'')+'" data-i="'+i+'">'+d[0]+'<small>'+d[1]+'</small></button>').join('');document.querySelectorAll('.topic').forEach(b=>b.onclick=()=>{index=+b.dataset.i;draw()})}
 function draw(){
@@ -39,7 +39,16 @@ function draw(){
  $('examples').innerHTML=d[8].map((e,i)=>'<option value="'+i+'">'+e[0]+'</option>').join('');
  $('exampleText').textContent=d[8][0][1];$('examples').onchange=()=>{$('exampleText').textContent=d[8][+$('examples').value][1];makeModel()};
  $('doorMode').style.display=index===0?'inline-block':'none';$('wrenchMode').style.display=index===0?'inline-block':'none';
- if(index===2){
+ if(index===3){
+  $('controls').innerHTML=`<div class="control"><label><span>Fluid / द्रव</span><b id="fluidName">Honey</b></label><select id="fluidType" style="width:100%"><option value="honey">Honey / शहद</option><option value="water">Water / पानी</option><option value="oil">Engine oil / इंजन ऑयल</option></select></div>
+  <div class="control"><label><span>Temperature / तापमान</span><b id="fluidTempVal">20 °C</b></label><input id="fluidTemp" type="range" min="10" max="60" step="1" value="20"></div>
+  <div class="control"><label><span>Moving plate speed / प्लेट की चाल</span><b id="fluidSpeedVal">0.50 m/s</b></label><input id="fluidSpeed" type="range" min="0.1" max="2" step="0.05" value="0.5"></div>
+  <div class="control"><label><span>Plate area / प्लेट का क्षेत्रफल</span><b id="fluidAreaVal">0.10 m²</b></label><input id="fluidArea" type="range" min="0.05" max="0.5" step="0.01" value="0.10"></div>
+  <div class="control"><label><span>Layer gap / परतों के बीच दूरी</span><b id="fluidGapVal">5 mm</b></label><input id="fluidGap" type="range" min="2" max="20" step="1" value="5"></div>
+  <div class="result" id="viscosityReadout"></div><p class="desc">ऊपरी प्लेट चलती है और निचली प्लेट स्थिर रहती है। बीच की fluid layers की चाल धीरे-धीरे बदलती है। / The upper plate moves while the lower plate stays fixed.</p>`;
+  const syncFluid=()=>{ $('fluidName').textContent=$('fluidType').selectedOptions[0].textContent;$('fluidTempVal').textContent=$('fluidTemp').value+' °C';$('fluidSpeedVal').textContent=(+$('fluidSpeed').value).toFixed(2)+' m/s';$('fluidAreaVal').textContent=(+$('fluidArea').value).toFixed(2)+' m²';$('fluidGapVal').textContent=$('fluidGap').value+' mm';updateViscosity() };
+  ['fluidType','fluidTemp','fluidSpeed','fluidArea','fluidGap'].forEach(id=>$(id).addEventListener('input',syncFluid));syncFluid();
+ }else if(index===2){
   $('controls').innerHTML=`<div class="control"><label><span>Arm extension / हाथों की दूरी</span><b id="armVal">1.20 m</b></label><input id="arm" type="range" min="0.20" max="1.20" step="0.01" value="1.20"></div><div class="control"><label><span>Weight in each hand / प्रत्येक हाथ का भार</span><b id="handMassVal">1.00 kg</b></label><input id="handMass" type="range" min="0.20" max="3.00" step="0.05" value="1.00"></div><button id="spinReset">Restart spin / फिर से शुरू</button><div class="result" id="spinReadout"></div><p class="desc">हाथ बाहर करने पर I बढ़ता है और घूमने की गति घटती है। हाथ अंदर करने पर I घटता है और गति बढ़ती है। बाहरी torque शून्य मानकर angular momentum स्थिर रखा गया है। / Arms out: higher I, lower speed. Arms in: lower I, higher speed. Angular momentum is conserved (zero external torque).</p>`;
   const syncSpin=()=>{ $('armVal').textContent=(+$('arm').value).toFixed(2)+' m';$('handMassVal').textContent=(+$('handMass').value).toFixed(2)+' kg';updateSpin() };
   $('arm').oninput=syncSpin;$('handMass').oninput=syncSpin;$('spinReset').onclick=()=>{spinState.angle=0;spinState.L=3.0;syncSpin()};syncSpin();
@@ -134,7 +143,7 @@ function makeModel(){
   }
  }else if(k===1){makeBicycle();}
  else if(k===2){makeSpinningChair();}
- else if(k===3){for(let y=-1.2;y<=1.2;y+=.4){let m=new THREE.Mesh(new THREE.BoxGeometry(3,.025,.9),material(y===-1.2?0xffbd59:0x377da7));m.position.y=y;add(m)}for(let i=0;i<6;i++)sphere(-1+i*.4,0,.15,.09,0x69d5ff)}
+ else if(k===3){makeViscosityModel();}
  else if(k===4){sphere(0,0,0,.6,0xffbd59);for(let i=0;i<3;i++){let t=new THREE.Mesh(new THREE.TorusGeometry(1.1+i*.25,.025,8,80),material(0x69d5ff));t.rotation.x=Math.PI/2;t.rotation.y=i*.6;add(t)}}
  else if(k===5||k===6){let m=new THREE.Mesh(new THREE.BoxGeometry(1.7,1.7,1.7),material(k===5?0x69d5ff:0xffbd59));add(m);for(let i=0;i<8;i++)sphere(-.6+(i%4)*.4,-.4+Math.floor(i/4)*.7,.9,.08,0xffffff)}
  else if(k===7||k===8){sphere(-1,0,0,.4,0xff5c7a);sphere(1,0,0,.4,0x69d5ff);for(let i=-2;i<=2;i++)rod([-1.5,i*.35,0],[1.5,i*.35,0],.012,0x9ab4d0)}
@@ -142,6 +151,18 @@ function makeModel(){
  else{for(let x of [-.8,.8]){let p=new THREE.Mesh(new THREE.BoxGeometry(.12,2,.9),material(0xffbd59));p.position.x=x;add(p)}for(let i=0;i<7;i++)sphere(-.55+i*.18,0,.2,.07,0x69d5ff)}
  update();
 }
+function makeViscosityModel(){
+ const base=material(0x37516d),moving=material(0xffbd59);
+ let lower=new THREE.Mesh(new THREE.BoxGeometry(3.5,.16,1.25),base);lower.position.y=-.9;add(lower);
+ fluidTopPlate=new THREE.Mesh(new THREE.BoxGeometry(3.5,.16,1.25),moving);fluidTopPlate.position.y=.9;add(fluidTopPlate);
+ for(let z of [-.64,.64]){let rail=new THREE.Mesh(new THREE.BoxGeometry(3.5,.035,.035),material(0x9ab4d0));rail.position.set(0,-.75,z);add(rail)}
+ fluidParticles=[];
+ for(let row=0;row<5;row++)for(let col=0;col<9;col++){let p=new THREE.Mesh(new THREE.SphereGeometry(.055,12,10),material(0xd89a32));p.position.set(-1.48+col*.37,-.58+row*.29,.25*Math.sin(col*1.7));p.userData={row,col,baseX:p.position.x};add(p);fluidParticles.push(p)}
+ for(let x of [-1,0,1])add(new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(x,.99,.72),.55,0xffbd59,.16,.1));
+}
+function viscosityData(){const type=$('fluidType')?.value||'honey',temp=+$('fluidTemp')?.value||20,speed=+$('fluidSpeed')?.value||.5,area=+$('fluidArea')?.value||.1,gap=(+$('fluidGap')?.value||5)/1000;const base={water:.001002,honey:2.0,oil:.25}[type]||2;const eta=base*Math.exp(-.025*(temp-20));return {type,temp,speed,area,gap,eta,force:eta*area*speed/gap}}
+function updateViscosity(){if(index!==3||!$('viscosityReadout'))return;const d=viscosityData(),labels={honey:'Honey / शहद',water:'Water / पानी',oil:'Engine oil / इंजन ऑयल'};$('fluidName').textContent=labels[d.type];$('viscosityReadout').innerHTML='Coefficient of viscosity / श्यानता गुणांक: '+fmt(d.eta)+' Pa·s<br>Viscous force / श्यान बल: '+fmt(d.force)+' N<br>Velocity gradient / वेग प्रवणता: '+fmt(d.speed/d.gap)+' s⁻¹<br>Temperature / तापमान: '+d.temp+' °C';const color=d.type==='honey'?0xd89a32:d.type==='water'?0x42a5e8:0xc4a66a;fluidParticles.forEach(p=>p.material.color.setHex(color))}
+function stepViscosity(dt){if(index!==3||!fluidTopPlate)return;fluidFlowTime+=dt;const d=viscosityData();fluidTopPlate.position.x=Math.sin(fluidFlowTime*1.2)*.12;fluidParticles.forEach(p=>{const fraction=(p.userData.row+1)/6;p.position.x=p.userData.baseX+Math.sin(fluidFlowTime*(.5+fraction*2)+p.userData.col)*.07+Math.sin(fluidFlowTime*1.5)*fraction*.15})}
 function makeSpinningChair(){
  const steel=material(0x91a8bd),fabric=material(0x2476a5),skin=material(0xe9b58b),shirt=material(0x69d5ff),gold=material(0xffbd59);
  spinGroup=new THREE.Group();obj.add(spinGroup);spinWeights=[];spinArms=[];
@@ -204,7 +225,7 @@ function stepDoorPhysics(dt){
 function animate(){
  requestAnimationFrame(animate);const now=performance.now(),dt=Math.min(.035,(now-lastFrame)/1000);lastFrame=now;
  if(auto&&!(index===0&&torqueMode==='door'))ry+=.004;
- stepDoorPhysics(dt);stepBike(dt);stepSpin(dt);
+ stepDoorPhysics(dt);stepBike(dt);stepSpin(dt);stepViscosity(dt);
  if(obj){obj.rotation.x=rx;obj.rotation.y=ry}camera.position.z=8.2/zoom;renderer.render(scene,camera);
 }
 

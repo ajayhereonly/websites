@@ -2,6 +2,37 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Physics Lab 3D | Interactive Physics</title>
 <style>
 :root{color-scheme:dark;--bg:#07111f;--panel:#101e31;--line:#29415e;--ink:#edf5ff;--muted:#a8bad2;--cyan:#69d5ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 75% 0,#183657,transparent 40%),var(--bg);color:var(--ink);font:15px/1.5 system-ui,Arial}header{padding:22px 4vw;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}h1{margin:0;font-size:clamp(23px,4vw,36px)}header p,.muted{color:var(--muted);margin:3px 0}button,select{background:#14263d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;cursor:pointer}button.on,.topic.active{background:#14516c;border-color:var(--cyan)}main{max-width:1500px;margin:auto;padding:20px;display:grid;grid-template-columns:250px 1fr;gap:16px}.panel{background:linear-gradient(145deg,var(--panel),#0b1727);border:1px solid var(--line);border-radius:15px;padding:16px}.topics{display:grid;gap:6px}.topic{text-align:left;width:100%;padding:9px 11px}.topic small{display:block;color:var(--muted)}.content{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(290px,.85fr);gap:16px}.stage{padding:0;overflow:hidden;position:relative;min-height:430px;background:radial-gradient(ellipse,#193451,#07111f 75%)}canvas{width:100%;height:100%;min-height:430px;display:block}.stagebar{position:absolute;top:12px;left:12px;display:flex;gap:8px}.hint{position:absolute;bottom:10px;left:12px;font-size:12px;color:#c6d8ed;background:#07111fc9;padding:5px 8px;border-radius:7px}.eyebrow{font-size:11px;letter-spacing:.1em;color:var(--cyan);font-weight:700;text-transform:uppercase}h2{font-size:25px;margin:5px 0}.formula{font:24px Georgia,serif;text-align:center;padding:13px;background:#071522;border:1px solid var(--line);border-radius:10px;margin:12px 0}.formula-hi{font-size:13px;color:var(--muted);text-align:center;margin-top:-5px}.example{background:#0b1929;border:1px solid var(--line);padding:12px;border-radius:10px;margin:14px 0}.example p{font-size:13px;color:#d7e5f7;margin:8px 0 0}.example select{float:right;max-width:60%;font-size:12px}.controls{display:grid;gap:10px}.control{background:#0b1929;padding:10px;border-radius:9px}.control label{display:flex;justify-content:space-between;gap:8px;font-size:13px}.control input{width:100%;accent-color:var(--cyan)}.result{color:var(--cyan);font-weight:700;margin-top:12px}.definition{margin-top:16px;padding:14px;border:1px solid #3b5878;border-left:4px solid var(--cyan);border-radius:10px;background:#0a1a2b}.definition h3{margin:0 0 8px;font-size:16px;color:var(--cyan)}.definition p{margin:7px 0;font-size:13px;color:#d7e5f7}.definition strong{color:var(--ink)}.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:14px}.navrow button{flex:1}.desc{color:#d7e5f7;font-size:14px}.foot{padding:0 20px 20px;color:var(--muted);font-size:12px;max-width:1500px;margin:auto}@media(max-width:900px){main{grid-template-columns:1fr}.topics{display:flex;overflow:auto}.topic{min-width:150px}.content{grid-template-columns:1fr}.stage,canvas{min-height:320px}} 
+
+/* Projector-friendly high-contrast light theme */
+:root{color-scheme:light;--bg:#ffffff;--panel:#ffffff;--line:#222222;--ink:#111111;--muted:#444444;--cyan:#111111}
+body{background:#ffffff!important;color:#111111!important}
+header{background:#ffffff;border-bottom:2px solid #111111}
+header p,.muted,.topic small{color:#444444}
+main{background:#ffffff}
+.panel{background:#ffffff!important;color:#111111;border:1.5px solid #222222;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+button,select{background:#ffffff!important;color:#111111!important;border:1.5px solid #222222!important;font-weight:650}
+button:hover,select:hover{background:#eeeeee!important}
+button.on,.topic.active{background:#111111!important;color:#ffffff!important;border-color:#111111!important}
+.topic{background:#ffffff!important;color:#111111!important}
+.topic.active small{color:#ffffff!important}
+.stage{background:#ffffff!important}
+.stagebar button{background:#ffffff!important;color:#111111!important;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.stagebar button.on{background:#111111!important;color:#ffffff!important}
+.hint{background:#ffffffed!important;color:#111111!important;border:1px solid #555555}
+.eyebrow{color:#111111}
+.formula{background:#f2f2f2!important;color:#000000!important;border:1.5px solid #222222}
+.formula-hi{color:#333333}
+.example,.control{background:#f5f5f5!important;color:#111111!important;border:1px solid #777777}
+.example p,.desc,.definition p{color:#222222!important}
+.definition{background:#ffffff!important;border:1.5px solid #222222;border-left:5px solid #111111}
+.definition h3,.definition strong{color:#111111!important}
+.control input{accent-color:#111111}
+.result{color:#000000!important;font-weight:800}
+.foot{color:#333333}
+.navrow button{background:#111111!important;color:#ffffff!important}
+.navrow button:hover{background:#333333!important}
+@media print{body,main,.panel,.stage{background:#ffffff!important;color:#000000!important}}
+
 </style></head><body>
 <header><div><h1>Physics Lab 3D</h1><p>Interactive physics • Real-life models • Learn by changing variables</p></div><button id="language" class="on">हिंदी + English</button></header>
 <main><aside class="panel"><b>Explore concepts / विषय</b><div class="topics" id="topics"></div></aside><section class="content">
@@ -116,7 +147,7 @@ function update(){
 
 $('language').onclick=()=>{lang=lang==='both'?'hi':lang==='hi'?'en':'both';$('language').textContent=lang==='both'?'हिंदी + English':lang==='hi'?'हिंदी':'English';draw()};
 function init(){
- let c=$('view');scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.set(0,.1,8.2);
+ let c=$('view');scene=new THREE.Scene();scene.background=new THREE.Color(0xffffff);camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.set(0,.1,8.2);
  renderer=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
  scene.add(new THREE.AmbientLight(0xffffff,1.5));let l=new THREE.DirectionalLight(0xffffff,2);l.position.set(4,5,6);scene.add(l);resize();window.addEventListener('resize',resize);
  c.style.touchAction='none';

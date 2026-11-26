@@ -24,7 +24,7 @@ const D=[
 ['Electric Capacitance','विद्युत धारिता','C = Q / V','धारिता = आवेश ÷ विभवांतर','Ability to store charge per unit potential difference. / प्रति इकाई विभवांतर आवेश संग्रह क्षमता।',[['Charge Q','आवेश Q',20,.1,100,'μC'],['Voltage V','वोल्टेज V',10,.1,100,'V']],v=>v[0]/v[1],'μF',[['Camera flash','A capacitor stores energy and releases it quickly for a flash.'],['Touch screen','Capacitive screens sense changes when a finger approaches.'],['Power supply','Capacitors smooth voltage fluctuations in circuits.']]]
 ];
 let index=0,lang='both',auto=false,torqueMode='door',torquePivot=null,torqueKnob=null,scene,camera,renderer,obj,rx=.08,ry=0,zoom=1,drag=false,lastX=0,lastY=0,lastFrame=performance.now();
-let doorState={angle:0,omega:0,force:0,torque:0,dragging:false,lastX:0,lastT:0};let bikeWheel=null,bikeTyre=null,bikeWeights=[],bikeState={angle:0,omega:0};let fluidParticles=[],fluidTopPlate=null,fluidFlowTime=0;let spinGroup=null,spinWeights=[],spinArms=[],spinState={angle:0,L:3.0};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+let doorState={angle:0,omega:0,force:0,torque:0,dragging:false,lastX:0,lastT:0};let bikeWheel=null,bikeTyre=null,bikeWeights=[],bikeState={angle:0,omega:0};let fluidParticles=[],fluidTopPlate=null,fluidFlowTime=0;let planckElectron=null,planckPhoton=null,planckWaves=[],planckPhase=0,planckAuto=true,planckGlow=null;let spinGroup=null,spinWeights=[],spinArms=[],spinState={angle:0,L:3.0};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const $=id=>document.getElementById(id),fmt=n=>!isFinite(n)?'—':n!==0&&(Math.abs(n)<.001||Math.abs(n)>=1e6)?n.toExponential(3):Number(n.toPrecision(4)).toString();
 function topicList(){$('topics').innerHTML=D.map((d,i)=>'<button class="topic '+(i===index?'active':'')+'" data-i="'+i+'">'+d[0]+'<small>'+d[1]+'</small></button>').join('');document.querySelectorAll('.topic').forEach(b=>b.onclick=()=>{index=+b.dataset.i;draw()})}
 function draw(){
@@ -52,6 +52,16 @@ function draw(){
   $('controls').innerHTML=`<div class="control"><label><span>Arm extension / हाथों की दूरी</span><b id="armVal">1.20 m</b></label><input id="arm" type="range" min="0.20" max="1.20" step="0.01" value="1.20"></div><div class="control"><label><span>Weight in each hand / प्रत्येक हाथ का भार</span><b id="handMassVal">1.00 kg</b></label><input id="handMass" type="range" min="0.20" max="3.00" step="0.05" value="1.00"></div><button id="spinReset">Restart spin / फिर से शुरू</button><div class="result" id="spinReadout"></div><p class="desc">हाथ बाहर करने पर I बढ़ता है और घूमने की गति घटती है। हाथ अंदर करने पर I घटता है और गति बढ़ती है। बाहरी torque शून्य मानकर angular momentum स्थिर रखा गया है। / Arms out: higher I, lower speed. Arms in: lower I, higher speed. Angular momentum is conserved (zero external torque).</p>`;
   const syncSpin=()=>{ $('armVal').textContent=(+$('arm').value).toFixed(2)+' m';$('handMassVal').textContent=(+$('handMass').value).toFixed(2)+' kg';updateSpin() };
   $('arm').oninput=syncSpin;$('handMass').oninput=syncSpin;$('spinReset').onclick=()=>{spinState.angle=0;spinState.L=3.0;syncSpin()};syncSpin();
+ }else if(index===4){
+  $('controls').innerHTML=`<div class="control"><label><span>LED colour / LED का रंग</span><b id="ledColourName">Blue</b></label><select id="ledPreset" style="width:100%"><option value="650">Red · 650 nm</option><option value="530">Green · 530 nm</option><option value="450" selected>Blue · 450 nm</option><option value="405">Violet · 405 nm</option></select></div>
+  <div class="control"><label><span>Wavelength / तरंगदैर्ध्य</span><b id="waveVal">450 nm</b></label><input id="wavelength" type="range" min="380" max="700" step="1" value="450"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="emitPhoton" class="on">Emit photon / फोटॉन निकालें</button><button id="autoPhoton">Auto emission: ON</button></div>
+  <div class="result" id="planckReadout"></div>
+  <p class="desc">LED में electron higher energy level से lower energy level पर आता है। Energy difference photon के रूप में निकलता है। रंग बदलकर wavelength और photon energy का संबंध देखो। / An electron drops to a lower energy level and emits a photon.</p>`;
+  const syncPlanck=()=>{const w=+$('wavelength').value,presets=[['Red',650],['Green',530],['Blue',450],['Violet',405]];const near=presets.find(p=>p[1]===w);$('ledColourName').textContent=near?near[0]:'Custom';$('waveVal').textContent=w+' nm';$('ledPreset').value=String(w);updatePlanck()};
+  $('wavelength').oninput=syncPlanck;$('ledPreset').onchange=()=>{$('wavelength').value=$('ledPreset').value;syncPlanck()};
+  $('emitPhoton').onclick=()=>{launchPlanckPhoton();};$('autoPhoton').onclick=()=>{planckAuto=!planckAuto;$('autoPhoton').textContent='Auto emission: '+(planckAuto?'ON':'OFF');$('autoPhoton').classList.toggle('on',planckAuto)};
+  syncPlanck();
  }else if(index===1){
   $('controls').innerHTML=`<div class="control"><label><span>Added mass per weight / प्रत्येक भार का द्रव्यमान</span><b id="bikeMassVal">0.20 kg</b></label><input id="bikeMass" type="range" min="0.05" max="0.8" step="0.01" value="0.20"></div><div class="control"><label><span>Weight radius / अक्ष से भार की दूरी</span><b id="bikeRadiusVal">0.45 m</b></label><input id="bikeRadius" type="range" min="0.12" max="0.48" step="0.01" value="0.45"></div><div class="control"><label><span>Applied torque / लगाया गया बल आघूर्ण</span><b id="bikeTorqueVal">1.5 N·m</b></label><input id="bikeTorque" type="range" min="0.1" max="5" step="0.1" value="1.5"></div><button id="bikeReset">Reset experiment / प्रयोग रीसेट</button><div class="result" id="bikeReadout"></div><p class="desc">पहिए के चारों ओर लगे चार भारों को अक्ष के पास या टायर के किनारे ले जाने के लिए Radius slider बदलें। लाल टायर = अधिक जड़त्व आघूर्ण; नीला टायर = कम जड़त्व आघूर्ण। समान torque पर अधिक I होने से angular acceleration कम होगी। / Move four rim weights inward or outward. Red indicates higher I; blue indicates lower I.</p>`;
   $('bikeMass').oninput=()=>{ $('bikeMassVal').textContent=(+$('bikeMass').value).toFixed(2)+' kg'; update()};$('bikeRadius').oninput=()=>{ $('bikeRadiusVal').textContent=(+$('bikeRadius').value).toFixed(2)+' m'; update()};$('bikeTorque').oninput=()=>{ $('bikeTorqueVal').textContent=(+$('bikeTorque').value).toFixed(1)+' N·m'; update()};$('bikeReset').onclick=()=>{ $('bikeMass').value=.20;$('bikeRadius').value=.45;$('bikeTorque').value=1.5;bikeState.angle=0;bikeState.omega=0;update()};
@@ -77,7 +87,7 @@ function draw(){
 function values(){return [...document.querySelectorAll('.control input')].map(x=>+x.value)}
 function update(){
  let d=D[index],v=values();
- if(index===2){updateSpin();return}
+ if(index===2){updateSpin();return}if(index===4){updatePlanck();return}
  if(index===1){updateBike();return}
  if(index===0){positionKnob();return}
  v.forEach((n,i)=>$('val'+i).textContent=fmt(n)+' '+d[5][i][5]);
@@ -144,12 +154,47 @@ function makeModel(){
  }else if(k===1){makeBicycle();}
  else if(k===2){makeSpinningChair();}
  else if(k===3){makeViscosityModel();}
- else if(k===4){sphere(0,0,0,.6,0xffbd59);for(let i=0;i<3;i++){let t=new THREE.Mesh(new THREE.TorusGeometry(1.1+i*.25,.025,8,80),material(0x69d5ff));t.rotation.x=Math.PI/2;t.rotation.y=i*.6;add(t)}}
+ else if(k===4){makePlanckModel();}
  else if(k===5||k===6){let m=new THREE.Mesh(new THREE.BoxGeometry(1.7,1.7,1.7),material(k===5?0x69d5ff:0xffbd59));add(m);for(let i=0;i<8;i++)sphere(-.6+(i%4)*.4,-.4+Math.floor(i/4)*.7,.9,.08,0xffffff)}
  else if(k===7||k===8){sphere(-1,0,0,.4,0xff5c7a);sphere(1,0,0,.4,0x69d5ff);for(let i=-2;i<=2;i++)rod([-1.5,i*.35,0],[1.5,i*.35,0],.012,0x9ab4d0)}
  else if(k===9){rod([-1.8,0,0],[-.6,0,0],.09,0x69d5ff);for(let i=0;i<5;i++)rod([-.6+i*.24,0,0],[-.36+i*.24,.45,0],.05,0xffbd59);rod([.6,0,0],[1.8,0,0],.09,0x69d5ff)}
  else{for(let x of [-.8,.8]){let p=new THREE.Mesh(new THREE.BoxGeometry(.12,2,.9),material(0xffbd59));p.position.x=x;add(p)}for(let i=0;i<7;i++)sphere(-.55+i*.18,0,.2,.07,0x69d5ff)}
  update();
+}
+function makePlanckModel(){
+ const gold=material(0xffc45c),chip=material(0x315b82),silicon=material(0x1a9b9a);
+ // Oversized LED package and semiconductor junction.
+ let base=new THREE.Mesh(new THREE.BoxGeometry(2.5,.32,1.45),material(0x263b52));base.position.set(-.55,-1.05,0);add(base);
+ let junction=new THREE.Mesh(new THREE.BoxGeometry(1.35,.34,.95),silicon);junction.position.set(-.55,-.72,0);add(junction);
+ let pLayer=new THREE.Mesh(new THREE.BoxGeometry(.62,.28,.98),material(0x416bba));pLayer.position.set(-.91,-.42,0);add(pLayer);
+ let nLayer=new THREE.Mesh(new THREE.BoxGeometry(.62,.28,.98),material(0xd58c38));nLayer.position.set(-.19,-.42,0);add(nLayer);
+ let dome=new THREE.Mesh(new THREE.SphereGeometry(.78,32,24,0,Math.PI*2,0,Math.PI/2),new THREE.MeshPhysicalMaterial({color:0x6ba9d8,transparent:true,opacity:.18,roughness:.12,metalness:.05,transmission:.25}));dome.position.set(-.55,-.25,0);add(dome);
+ // Two energy levels and the electron that drops between them.
+ rod([.65,.78,.15],[1.85,.78,.15],.035,0xffbd59);rod([.65,-.05,.15],[1.85,-.05,.15],.035,0x69d5ff);
+ planckElectron=new THREE.Mesh(new THREE.SphereGeometry(.12,24,18),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x69d5ff,emissiveIntensity:1.8}));planckElectron.position.set(1.1,.78,.2);add(planckElectron);
+ let arrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(1.55,.66,.2),.55,0xffbd59,.18,.13);add(arrow);
+ // Photon launch lane and a luminous wave packet.
+ rod([-.25,.18,.42],[2.25,.18,.42],.012,0x52718e);
+ planckPhoton=new THREE.Group();add(planckPhoton);
+ let core=new THREE.Mesh(new THREE.SphereGeometry(.12,20,16),new THREE.MeshBasicMaterial({color:0x4da9ff}));planckPhoton.add(core);
+ for(let i=0;i<3;i++){let ring=new THREE.Mesh(new THREE.TorusGeometry(.22+i*.12,.018,8,40),new THREE.MeshBasicMaterial({color:0x4da9ff,transparent:true,opacity:.8-i*.18}));ring.rotation.y=Math.PI/2;planckPhoton.add(ring);planckWaves.push(ring)}
+ planckPhoton.position.set(-.2,.18,.42);planckPhase=0;updatePlanck();launchPlanckPhoton();
+}
+function planckData(){const wavelength=(+$('wavelength')?.value||450)*1e-9,c=299792458,h=6.62607015e-34,frequency=c/wavelength,energy=h*frequency;return {nm:wavelength*1e9,frequency,energy,eV:energy/1.602176634e-19}}
+function updatePlanck(){
+ if(index!==4||!$('planckReadout'))return;
+ const d=planckData(),colour=d.nm>=620?0xff354f:d.nm>=495?0x35df88:d.nm>=450?0x348cff:d.nm>=420?0x765cff:0xb45cff;
+ $('planckReadout').innerHTML='Photon energy / फोटॉन ऊर्जा: '+d.energy.toExponential(3)+' J ('+d.eV.toFixed(3)+' eV)<br>Frequency / आवृत्ति: '+(d.frequency/1e14).toFixed(3)+' × 10¹⁴ Hz<br>Wavelength / तरंगदैर्ध्य: '+d.nm.toFixed(0)+' nm<br>Planck constant h: 6.62607015 × 10⁻³⁴ J·s';
+ if(planckPhoton){planckPhoton.children[0].material.color.setHex(colour);planckWaves.forEach(w=>w.material.color.setHex(colour))}
+ if(planckGlow){planckGlow.material.color.setHex(colour);planckGlow.material.emissive.setHex(colour)}
+}
+function launchPlanckPhoton(){if(!planckPhoton)return;planckPhase=0;planckPhoton.visible=true;planckPhoton.position.set(-.15,.18,.42);if(planckElectron)planckElectron.position.y=.78}
+function stepPlanck(dt){
+ if(index!==4||!planckPhoton)return;
+ if(planckAuto&&planckPhase===0&&Math.random()<dt*.8)launchPlanckPhoton();
+ if(planckPhase<1){planckPhase=Math.min(1,planckPhase+dt*.48);planckPhoton.position.x=-.15+planckPhase*2.2;planckPhoton.position.y=.18+Math.sin(planckPhase*Math.PI*8)*.045;planckWaves.forEach((w,i)=>{w.scale.setScalar(.8+Math.sin(planckPhase*12+i)*.16)});if(planckElectron)planckElectron.position.y=.78-.83*Math.min(1,planckPhase*3)}
+ else planckPhoton.visible=false;
+ if(planckGlow)planckGlow.material.emissiveIntensity=.8+Math.sin(performance.now()*.006)*.35;
 }
 function makeViscosityModel(){
  const base=material(0x37516d),moving=material(0xffbd59);
@@ -261,7 +306,7 @@ function stepDoorPhysics(dt){
 function animate(){
  requestAnimationFrame(animate);const now=performance.now(),dt=Math.min(.035,(now-lastFrame)/1000);lastFrame=now;
  if(auto&&!(index===0&&torqueMode==='door'))ry+=.004;
- stepDoorPhysics(dt);stepBike(dt);stepSpin(dt);stepViscosity(dt);
+ stepDoorPhysics(dt);stepBike(dt);stepSpin(dt);stepViscosity(dt);stepPlanck(dt);
  if(obj){obj.rotation.x=rx;obj.rotation.y=ry}camera.position.z=8.2/zoom;renderer.render(scene,camera);
 }
 

@@ -16,12 +16,12 @@ const D=[
 ['Angular Momentum','कोणीय संवेग','L = I ω','कोणीय संवेग = I × कोणीय वेग','Rotational equivalent of linear momentum. / रैखिक संवेग का घूर्णन समकक्ष।',[['Moment of inertia I','जड़त्व आघूर्ण I',2,.1,10,'kg·m²'],['Angular speed ω','कोणीय वेग ω',4,0,20,'rad/s']],v=>v[0]*v[1],'kg·m²/s',[['Bicycle wheel','A faster-spinning wheel has more angular momentum for the same I.'],['Gyroscope','Spin angular momentum helps a gyroscope resist reorientation.'],['Figure skater','Pulling arms inward increases spin rate as I decreases.']]],
 ['Coefficient of Viscosity','श्यानता गुणांक','η = F h / (A v)','η = बल × परत दूरी ÷ (क्षेत्रफल × वेग)','Measure of a fluid’s internal resistance to flow. / द्रव के प्रवाह का आंतरिक प्रतिरोध।',[['Force F','बल F',2,.1,20,'N'],['Gap h','परत दूरी h',.01,.001,.1,'m'],['Area A','क्षेत्रफल A',1,.1,5,'m²'],['Speed v','वेग v',1,.1,10,'m/s']],v=>v[0]*v[1]/(v[2]*v[3]),'Pa·s',[['Honey and water','Honey is more viscous than water and flows more slowly.'],['Engine oil','Oil viscosity controls the lubricating film between moving parts.'],['Syringe','A more viscous liquid needs greater pressure to flow through a narrow needle.']]],
 ['Planck Constant','प्लांक नियतांक','E = h f','फोटॉन ऊर्जा = प्लांक नियतांक × आवृत्ति','Links photon energy with frequency. / फोटॉन ऊर्जा और आवृत्ति के बीच संबंध।',[['Frequency f','आवृत्ति f',5e14,1e13,1e15,'Hz']],v=>6.62607015e-34*v[0],'J',[['LED light','Blue photons have more energy than red photons.'],['Photoelectric effect','Higher frequency means higher photon energy.'],['Solar cell','Photons need sufficient energy to excite electrons across the band gap.']]],
-['Latent Heat','गुप्त ऊष्मा','Q = m L','ऊष्मा = द्रव्यमान × विशिष्ट गुप्त ऊष्मा','Heat absorbed or released during phase change without temperature change. / अवस्था परिवर्तन में ताप बदले बिना ऊष्मा।',[['Mass m','द्रव्यमान m',1,.1,10,'kg'],['Latent heat L','गुप्त ऊष्मा L',334,10,2500,'kJ/kg']],v=>v[0]*v[1],'kJ',[['Melting ice','Heat changes ice into water while temperature stays near the melting point.'],['Boiling water','Added energy converts liquid water into steam.'],['Sweating','Evaporation absorbs latent heat from skin and cools the body.']]],
-['Specific Heat Capacity','विशिष्ट ऊष्मा धारिता','Q = m c ΔT','ऊष्मा = द्रव्यमान × विशिष्ट ऊष्मा × ताप परिवर्तन','Heat needed to raise unit mass by one degree. / इकाई द्रव्यमान का ताप एक डिग्री बढ़ाने की ऊष्मा।',[['Heat Q','ऊष्मा Q',40,1,100,'kJ'],['Mass m','द्रव्यमान m',1,.1,10,'kg'],['Specific heat c','विशिष्ट ऊष्मा c',4.18,.1,10,'kJ/kg·K']],v=>v[0]/(v[1]*v[2]),'K rise',[['Water kettle','Water needs substantial heat to increase its temperature.'],['Sea breeze','Land heats faster than seawater because their specific heat capacities differ.'],['Car radiator','Coolant absorbs engine heat; specific heat affects energy carried away.']]],
-['Electric Charge','विद्युत आवेश','Q = n e','आवेश = इलेक्ट्रॉनों की संख्या × मूल आवेश','Property responsible for electric interaction. / विद्युत अंतःक्रिया का मूल गुण।',[['Number n','मूल आवेशों की संख्या n',5,1,100,'×10¹⁸']],v=>v[0]*1.602176634e-19*1e18,'C',[['Balloon','Rubbing transfers electrons and creates electrostatic attraction.'],['Lightning','Charge separation in storm clouds can cause a discharge.'],['Photocopier','Electrostatic charge attracts toner particles to selected regions.']]],
-['Electric Potential','विद्युत विभव','V = W / Q','विभव = कार्य ÷ आवेश','Work done per unit charge. / प्रति इकाई आवेश किया गया कार्य।',[['Work W','कार्य W',12,.1,100,'J'],['Charge Q','आवेश Q',2,.1,20,'C']],v=>v[0]/v[1],'V',[['Battery','A battery maintains potential difference to drive current.'],['Water analogy','Voltage difference is analogous to pressure difference.'],['Lightning','Large cloud-to-ground potential difference can drive a discharge.']]],
-['Electric Resistance','विद्युत प्रतिरोध','R = V / I','प्रतिरोध = विभवांतर ÷ धारा','Opposition to electric current. / विद्युत धारा का विरोध।',[['Voltage V','वोल्टेज V',12,.1,50,'V'],['Current I','धारा I',2,.1,10,'A']],v=>v[0]/v[1],'Ω',[['Toaster','A resistive element converts electrical energy into heat.'],['Long wire','Longer or thinner wire has greater resistance.'],['Dimmer','Changing resistance changes current for a given voltage.']]],
-['Electric Capacitance','विद्युत धारिता','C = Q / V','धारिता = आवेश ÷ विभवांतर','Ability to store charge per unit potential difference. / प्रति इकाई विभवांतर आवेश संग्रह क्षमता।',[['Charge Q','आवेश Q',20,.1,100,'μC'],['Voltage V','वोल्टेज V',10,.1,100,'V']],v=>v[0]/v[1],'μF',[['Camera flash','A capacitor stores energy and releases it quickly for a flash.'],['Touch screen','Capacitive screens sense changes when a finger approaches.'],['Power supply','Capacitors smooth voltage fluctuations in circuits.']]]
+['Latent Heat','गुप्त ऊष्मा','Q = m L','ऊष्मा = द्रव्यमान × विशिष्ट गुप्त ऊष्मा','Heat absorbed or released during phase change without temperature change. / अवस्था परिवर्तन में ताप बदले बिना ऊष्मा।',[['Mass m','द्रव्यमान m',1,.1,10,'kg'],['Latent heat L','गुप्त ऊष्मा L',334,10,2500,'kJ/kg']],v=>v[0]*v[1],'kJ',[['Ice melting in a glass','Watch an ice cube absorb heat and turn into liquid water. During melting, the temperature stays near 0 °C until the phase change is complete. / गिलास में बर्फ ऊष्मा लेकर पानी बनती है; पिघलते समय तापमान लगभग 0 °C रहता है।']]],
+['Specific Heat Capacity','विशिष्ट ऊष्मा धारिता','Q = m c ΔT','ऊष्मा = द्रव्यमान × विशिष्ट ऊष्मा × ताप परिवर्तन','Heat needed to raise unit mass by one degree. / इकाई द्रव्यमान का ताप एक डिग्री बढ़ाने की ऊष्मा।',[['Heat Q','ऊष्मा Q',40,1,100,'kJ'],['Mass m','द्रव्यमान m',1,.1,10,'kg'],['Specific heat c','विशिष्ट ऊष्मा c',4.18,.1,10,'kJ/kg·K']],v=>v[0]/(v[1]*v[2]),'K rise',[['Heating water in a kettle','The same heat raises water temperature gradually because water has a high specific heat capacity. / केतली में पानी को गर्म करने के लिए काफी ऊष्मा चाहिए; समान heat पर उसका ताप धीरे बढ़ता है।']]],
+['Electric Charge','विद्युत आवेश','Q = n e','आवेश = इलेक्ट्रॉनों की संख्या × मूल आवेश','Property responsible for electric interaction. / विद्युत अंतःक्रिया का मूल गुण।',[['Number n','मूल आवेशों की संख्या n',5,1,100,'×10¹⁸']],v=>v[0]*1.602176634e-19*1e18,'C',[['Rubbed balloon sticking to a wall','Rubbing a balloon on hair transfers electrons to it. The charged balloon polarizes the wall and is attracted to it. / बालों पर रगड़ने से balloon पर अतिरिक्त इलेक्ट्रॉन आते हैं और वह दीवार से आकर्षित होता है।']]],
+['Electric Potential','विद्युत विभव','V = W / Q','विभव = कार्य ÷ आवेश','Work done per unit charge. / प्रति इकाई आवेश किया गया कार्य।',[['Work W','कार्य W',12,.1,100,'J'],['Charge Q','आवेश Q',2,.1,20,'C']],v=>v[0]/v[1],'V',[['Battery powering a torch','A 1.5 V cell provides energy per unit charge. That potential difference drives charge through the torch circuit and lights the bulb. / बैटरी प्रति coulomb आवेश को ऊर्जा देती है, जिससे torch में current बहता है।']]],
+['Electric Resistance','विद्युत प्रतिरोध','R = V / I','प्रतिरोध = विभवांतर ÷ धारा','Opposition to electric current. / विद्युत धारा का विरोध।',[['Voltage V','वोल्टेज V',12,.1,50,'V'],['Current I','धारा I',2,.1,10,'A']],v=>v[0]/v[1],'Ω',[['Electric room heater','Current through the heater coil meets resistance, converting electrical energy into heat that warms the room. / हीटर की coil का resistance विद्युत ऊर्जा को ऊष्मा में बदलता है।']]],
+['Electric Capacitance','विद्युत धारिता','C = Q / V','धारिता = आवेश ÷ विभवांतर','Ability to store charge per unit potential difference. / प्रति इकाई विभवांतर आवेश संग्रह क्षमता।',[['Charge Q','आवेश Q',20,.1,100,'μC'],['Voltage V','वोल्टेज V',10,.1,100,'V']],v=>v[0]/v[1],'μF',[['Camera flash charging and firing','A capacitor stores separated electric charge while charging, then releases stored energy rapidly through the flash tube. / कैमरे का capacitor charge जमा करता है और flash के समय उसे तेजी से छोड़ता है।']]]
 ];
 let index=0,lang='both',auto=false,torqueMode='door',torquePivot=null,torqueKnob=null,scene,camera,renderer,obj,rx=.08,ry=0,zoom=1,drag=false,lastX=0,lastY=0,lastFrame=performance.now();
 let doorState={angle:0,omega:0,force:0,torque:0,dragging:false,lastX:0,lastT:0};let bikeWheel=null,bikeTyre=null,bikeWeights=[],bikeState={angle:0,omega:0};let fluidParticles=[],fluidTopPlate=null,fluidFlowTime=0;let planckElectron=null,planckPhoton=null,planckWaves=[],planckPhase=0,planckAuto=true,planckGlow=null;let spinGroup=null,spinWeights=[],spinArms=[],spinState={angle:0,L:3.0};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
@@ -126,7 +126,7 @@ function sphere(x,y,z,r,c){let m=new THREE.Mesh(new THREE.SphereGeometry(r,28,20
 function rod(a,b,r,c){let A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),16),material(c));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());add(m)}
 function makeModel(){
  if(obj){scene.remove(obj);obj.traverse(o=>{o.geometry?.dispose();o.material?.dispose()})}
- obj=new THREE.Group();scene.add(obj);bikeWeights=[];bikeWheel=null;bikeTyre=null;doorState.angle=0;doorState.omega=0;doorState.force=0;let k=index;
+ obj=new THREE.Group();scene.add(obj);realPulse=0;realParts={};bikeWeights=[];bikeWheel=null;bikeTyre=null;doorState.angle=0;doorState.omega=0;doorState.force=0;let k=index;
  if(k===0){
   if(torqueMode==='door'){
    // House front: wall wings, lintel, threshold and an operable hinged door.
@@ -155,11 +155,80 @@ function makeModel(){
  else if(k===2){makeSpinningChair();}
  else if(k===3){makeViscosityModel();}
  else if(k===4){makePlanckModel();}
- else if(k===5||k===6){let m=new THREE.Mesh(new THREE.BoxGeometry(1.7,1.7,1.7),material(k===5?0x69d5ff:0xffbd59));add(m);for(let i=0;i<8;i++)sphere(-.6+(i%4)*.4,-.4+Math.floor(i/4)*.7,.9,.08,0xffffff)}
- else if(k===7||k===8){sphere(-1,0,0,.4,0xff5c7a);sphere(1,0,0,.4,0x69d5ff);for(let i=-2;i<=2;i++)rod([-1.5,i*.35,0],[1.5,i*.35,0],.012,0x9ab4d0)}
- else if(k===9){rod([-1.8,0,0],[-.6,0,0],.09,0x69d5ff);for(let i=0;i<5;i++)rod([-.6+i*.24,0,0],[-.36+i*.24,.45,0],.05,0xffbd59);rod([.6,0,0],[1.8,0,0],.09,0x69d5ff)}
- else{for(let x of [-.8,.8]){let p=new THREE.Mesh(new THREE.BoxGeometry(.12,2,.9),material(0xffbd59));p.position.x=x;add(p)}for(let i=0;i<7;i++)sphere(-.55+i*.18,0,.2,.07,0x69d5ff)}
+ else if(k===5){makeLatentHeatModel();}
+ else if(k===6){makeSpecificHeatModel();}
+ else if(k===7){makeChargeModel();}
+ else if(k===8){makePotentialModel();}
+ else if(k===9){makeResistanceModel();}
+ else if(k===10){makeCapacitanceModel();}
  update();
+}
+
+// Real-life teaching models for the six requested concepts.
+let realPulse=0,realParts={};
+function box(x,y,z,sx,sy,sz,c){let m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material(c));m.position.set(x,y,z);add(m);return m}
+function cylinder(x,y,z,r1,r2,h,c){let m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,32),material(c));m.position.set(x,y,z);add(m);return m}
+function makeLatentHeatModel(){
+ // Transparent beaker, ice cube and water level.
+ cylinder(-.45,-.1,0,.85,.85,1.45,0x80c9ed).material.transparent=true;cylinder(-.45,-.1,0,.85,.85,1.45,0x80c9ed).material.opacity=.12;
+ let water=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,.7,40),new THREE.MeshPhysicalMaterial({color:0x35aeea,transparent:true,opacity:.55,roughness:.12}));water.position.set(-.45,-.58,0);add(water);
+ let ice=new THREE.Mesh(new THREE.BoxGeometry(.62,.62,.62),new THREE.MeshPhysicalMaterial({color:0xb9efff,transparent:true,opacity:.9,roughness:.18}));ice.position.set(-.45,.12,0);add(ice);
+ for(let i=0;i<4;i++){let b=sphere(-.45+(i%2)*.2-.1,.8+Math.floor(i/2)*.16,(i%2)*.12,.045,0xffbd59);b.material.emissive.setHex(0xff8b25);b.material.emissiveIntensity=.5}
+ realParts={ice,water}; 
+}
+function makeSpecificHeatModel(){
+ // Electric kettle with visible water and thermometer.
+ cylinder(-.25,-.2,0,.72,.72,1.35,0x9eb6c9);let water=cylinder(-.25,-.45,0,.61,.61,.65,0x2c9fe0);water.material.transparent=true;water.material.opacity=.75;
+ let lid=cylinder(-.25,.5,0,.73,.73,.12,0x50647a);box(-.25,.68,0,.35,.18,.3,0xc5d4e3);
+ let handle= new THREE.Mesh(new THREE.TorusGeometry(.48,.075,12,36,Math.PI),material(0x69d5ff));handle.position.set(.65,.0,0);handle.rotation.z=Math.PI/2;add(handle);
+ let coil=cylinder(-.25,-.9,0,.48,.48,.09,0xff9c37);
+ let tube=cylinder(1.05,-.1,.15,.07,.07,1.3,0x8ed9f2);let mercury=cylinder(1.05,-.45,.15,.035,.035,.55,0xff5252);
+ realParts={water,coil,mercury};
+}
+function makeChargeModel(){
+ // Balloon rubbed by hair; negative charges on balloon attract polarized wall charges.
+ let balloon=new THREE.Mesh(new THREE.SphereGeometry(.62,32,24),new THREE.MeshPhysicalMaterial({color:0xef4f86,roughness:.2,metalness:.08}));balloon.position.set(-.9,.1,0);add(balloon);
+ rod([-1.25,-.45,0],[-.55,-.75,0],.045,0xc58b56);for(let i=0;i<7;i++)sphere(-1.35+i*.14,-.82+Math.sin(i)*.1,.08,.07,0xc58b56);
+ let wall=box(1.15,0,0,.16,2.5,1.6,0x58728e);
+ for(let i=0;i<4;i++)for(let j=0;j<4;j++)sphere(1.02+i*.035,-.8+j*.52,.4,.045,0xff5e72);
+ for(let i=0;i<10;i++)sphere(-1.25+(i%4)*.2,-.15+Math.floor(i/4)*.16,.48,.045,0x55d9ff);
+ realParts={balloon,wall};
+}
+function makePotentialModel(){
+ // Cell, wires and torch bulb. Potential difference drives current through the circuit.
+ box(-1.25,0,0,.62,1.35,.55,0x2b435e);box(-1.25,.78,0,.22,.2,.22,0xff5555);box(-1.25,-.78,0,.22,.2,.22,0x222b39);
+ let plus=box(-1.25,.48,.31,.28,.1,.08,0xff5555),minus=box(-1.25,-.48,.31,.28,.1,.08,0x69d5ff);
+ rod([-.9,.55,0],[.8,.55,0],.035,0xffbd59);rod([.8,.55,0],[.8,-.55,0],.035,0xffbd59);rod([.8,-.55,0],[-.9,-.55,0],.035,0x69d5ff);
+ let bulb=new THREE.Mesh(new THREE.SphereGeometry(.35,24,18),new THREE.MeshPhysicalMaterial({color:0xffe28a,emissive:0xffb52e,emissiveIntensity:.3,transparent:true,opacity:.85}));bulb.position.set(.8,0,0);add(bulb);
+ let base=cylinder(.8,-.43,0,.17,.17,.3,0x879bad);realParts={bulb,plus,minus};
+}
+function makeResistanceModel(){
+ // Room heater with glowing resistive coil and protective grille.
+ box(0,-.25,0,2.2,1.75,.35,0x52677e);
+ for(let x of [-.8,.8])rod([x,-1.2,0],[x,1.0,0],.06,0x9eb6c9);
+ for(let y of [-.9,-.45,0,.45,.9])rod([-1,y,.25],[1,y,.25],.025,0x8da6bf);
+ let coil=new THREE.Mesh(new THREE.TorusKnotGeometry(.52,.075,120,12,2,5),new THREE.MeshStandardMaterial({color:0xff762f,emissive:0xff3b12,emissiveIntensity:1.1}));coil.position.set(0,-.1,.38);add(coil);
+ let glow=new THREE.PointLight(0xff642e,1.3,4);glow.position.set(0,0,1);add(glow);
+ realParts={coil,glow};
+}
+function makeCapacitanceModel(){
+ // Camera flash circuit: capacitor can, flash tube and camera body.
+ box(-.45,-.25,0,2.1,1.5,.55,0x334b67);
+ cylinder(-.55,-.05,.42,.28,.28,1.0,0xffbd59);
+ cylinder(-.55,.48,.42,.12,.12,.12,0x69d5ff);
+ let tube=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.85,8,16),new THREE.MeshPhysicalMaterial({color:0xb8edff,emissive:0x52cfff,emissiveIntensity:.25,transparent:true,opacity:.9}));tube.position.set(.75,.2,.42);tube.rotation.z=Math.PI/2;add(tube);
+ let lens=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.18,32),material(0x69d5ff));lens.rotation.z=Math.PI/2;lens.position.set(.78,-.45,.42);add(lens);
+ let flash=new THREE.PointLight(0x9ceaff,0,5);flash.position.set(.75,.2,.8);add(flash);
+ realParts={tube,flash};
+}
+function stepRealExamples(dt){
+ realPulse+=dt;
+ if(index===5&&realParts.ice){let melt=Math.min(.85,realPulse*.035);realParts.ice.scale.setScalar(1-melt*.65);realParts.ice.position.y=.12-melt*.18;realParts.water.scale.y=1+melt*.8}
+ if(index===6&&realParts.mercury){let rise=.2+.22*Math.sin(realPulse*.7);realParts.mercury.scale.y=rise;realParts.mercury.position.y=-.72+rise*.55;realParts.coil.material.emissive?.setHex(0xff642e)}
+ if(index===7&&realParts.balloon){realParts.balloon.position.x=-.9+.08*Math.sin(realPulse*1.4)}
+ if(index===8&&realParts.bulb){realParts.bulb.material.emissiveIntensity=.35+.25*(1+Math.sin(realPulse*5))}
+ if(index===9&&realParts.coil){realParts.coil.material.emissiveIntensity=.7+Math.sin(realPulse*6)*.25;realParts.glow.intensity=1.0+Math.sin(realPulse*6)*.35}
+ if(index===10&&realParts.flash){realParts.flash.intensity=Math.max(0,Math.sin(realPulse*1.8)**30*4)}
 }
 function makePlanckModel(){
  const gold=material(0xffc45c),chip=material(0x315b82),silicon=material(0x1a9b9a);
@@ -306,7 +375,7 @@ function stepDoorPhysics(dt){
 function animate(){
  requestAnimationFrame(animate);const now=performance.now(),dt=Math.min(.035,(now-lastFrame)/1000);lastFrame=now;
  if(auto&&!(index===0&&torqueMode==='door'))ry+=.004;
- stepDoorPhysics(dt);stepBike(dt);stepSpin(dt);stepViscosity(dt);stepPlanck(dt);
+ stepDoorPhysics(dt);stepBike(dt);stepSpin(dt);stepViscosity(dt);stepPlanck(dt);stepRealExamples(dt);
  if(obj){obj.rotation.x=rx;obj.rotation.y=ry}camera.position.z=8.2/zoom;renderer.render(scene,camera);
 }
 

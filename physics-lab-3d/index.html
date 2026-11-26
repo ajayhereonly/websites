@@ -212,6 +212,7 @@ function makeSpecificHeatModel(){
  let molecules=[];for(let i=0;i<42;i++){let a=i*2.399,r=.12+(.39*Math.sqrt((i%21)/21));let p=new THREE.Mesh(new THREE.SphereGeometry(.035,12,10),new THREE.MeshBasicMaterial({color:i%3===0?0x9af1ff:0x42cfff}));p.position.set(-.25+Math.cos(a)*r,-.48+((i%7)/7)*.52,.34+Math.sin(a)*.28);add(p);molecules.push(p)}
  let waves=[];for(let i=0;i<3;i++){let w=new THREE.Mesh(new THREE.TorusGeometry(.22+i*.13,.022,8,28),new THREE.MeshBasicMaterial({color:0xffa52e,transparent:true,opacity:.8}));w.position.set(-.25,-.99,.3);w.rotation.x=Math.PI/2;add(w);waves.push(w)}
  realParts={water,coil,mercury,molecules,waves,shell};
+}
 function makeChargeModel(){
  // Balloon rubbed by hair; negative charges on balloon attract polarized wall charges.
  chargeDots=[];

@@ -96,7 +96,7 @@ function sphere(x,y,z,r,c){let m=new THREE.Mesh(new THREE.SphereGeometry(r,28,20
 function rod(a,b,r,c){let A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),16),material(c));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());add(m)}
 function makeModel(){
  if(obj){scene.remove(obj);obj.traverse(o=>{o.geometry?.dispose();o.material?.dispose()})}
- obj=new THREE.Group();scene.add(obj);doorState.angle=0;doorState.omega=0;doorState.force=0;let k=index;
+ obj=new THREE.Group();scene.add(obj);bikeWeights=[];bikeWheel=null;bikeTyre=null;doorState.angle=0;doorState.omega=0;doorState.force=0;let k=index;
  if(k===0){
   if(torqueMode==='door'){
    // House front: wall wings, lintel, threshold and an operable hinged door.

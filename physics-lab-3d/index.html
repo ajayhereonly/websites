@@ -155,30 +155,52 @@ function makeViscosityModel(){
  const base=material(0x37516d),moving=material(0xffbd59);
  let lower=new THREE.Mesh(new THREE.BoxGeometry(3.5,.16,1.25),base);lower.position.y=-.9;add(lower);
  fluidTopPlate=new THREE.Mesh(new THREE.BoxGeometry(3.5,.16,1.25),moving);fluidTopPlate.position.y=.9;add(fluidTopPlate);
+ // Bright side rails make the fluid gap easy to see.
  for(let z of [-.64,.64]){let rail=new THREE.Mesh(new THREE.BoxGeometry(3.5,.035,.035),material(0x9ab4d0));rail.position.set(0,-.75,z);add(rail)}
- fluidParticles=[];
- for(let row=0;row<5;row++)for(let col=0;col<9;col++){let p=new THREE.Mesh(new THREE.SphereGeometry(.055,12,10),material(0xd89a32));p.position.set(-1.48+col*.37,-.58+row*.29,.25*Math.sin(col*1.7));p.userData={row,col,baseX:p.position.x};add(p);fluidParticles.push(p)}
- for(let x of [-1,0,1])add(new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(x,.99,.72),.55,0xffbd59,.16,.1));
+ fluidParticles=[];fluidFlowTime=0;
+ // Larger, brighter particles with short luminous trails make shear motion visible on mobile.
+ for(let row=0;row<6;row++)for(let col=0;col<12;col++){
+  let p=new THREE.Mesh(new THREE.SphereGeometry(.078,16,12),material(0xd89a32));
+  p.position.set(-1.55+col*.28,-.66+row*.25,.25*Math.sin(col*1.7));
+  p.userData={row,col,baseX:p.position.x,trail:null};
+  add(p);fluidParticles.push(p);
+  let trail=new THREE.Mesh(new THREE.BoxGeometry(.22,.025,.025),new THREE.MeshBasicMaterial({color:0xffd27a,transparent:true,opacity:.55}));
+  trail.position.copy(p.position);add(trail);p.userData.trail=trail;
+ }
+ // Direction arrows above the moving plate.
+ for(let x of [-1.15,0,1.15])add(new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(x,1.12,.72),.72,0xffbd59,.22,.14));
 }
 function viscosityData(){const type=$('fluidType')?.value||'honey',temp=+$('fluidTemp')?.value||20,speed=+$('fluidSpeed')?.value||.5,area=+$('fluidArea')?.value||.1,gap=(+$('fluidGap')?.value||5)/1000;const base={water:.001002,honey:2.0,oil:.25}[type]||2;const eta=base*Math.exp(-.025*(temp-20));return {type,temp,speed,area,gap,eta,force:eta*area*speed/gap}}
-function updateViscosity(){if(index!==3||!$('viscosityReadout'))return;const d=viscosityData(),labels={honey:'Honey / शहद',water:'Water / पानी',oil:'Engine oil / इंजन ऑयल'};$('fluidName').textContent=labels[d.type];$('viscosityReadout').innerHTML='Coefficient of viscosity / श्यानता गुणांक: '+fmt(d.eta)+' Pa·s<br>Viscous force / श्यान बल: '+fmt(d.force)+' N<br>Velocity gradient / वेग प्रवणता: '+fmt(d.speed/d.gap)+' s⁻¹<br>Temperature / तापमान: '+d.temp+' °C';const color=d.type==='honey'?0xd89a32:d.type==='water'?0x42a5e8:0xc4a66a;fluidParticles.forEach(p=>p.material.color.setHex(color))}
-function stepViscosity(dt){if(index!==3||!fluidTopPlate)return;fluidFlowTime+=dt;const d=viscosityData();fluidTopPlate.position.x=Math.sin(fluidFlowTime*1.2)*.12;fluidParticles.forEach(p=>{const fraction=(p.userData.row+1)/6;p.position.x=p.userData.baseX+Math.sin(fluidFlowTime*(.5+fraction*2)+p.userData.col)*.07+Math.sin(fluidFlowTime*1.5)*fraction*.15})}
-function makeSpinningChair(){
- const steel=material(0x91a8bd),fabric=material(0x2476a5),skin=material(0xe9b58b),shirt=material(0x69d5ff),gold=material(0xffbd59);
- spinGroup=new THREE.Group();obj.add(spinGroup);spinWeights=[];spinArms=[];
- // Chair pedestal and five-star base remain stationary; seat and person rotate together.
- rod([0,-1.45,0],[0,-.72,0],.09,0x9aafc4);let seat=new THREE.Mesh(new THREE.CylinderGeometry(.65,.65,.16,40),fabric);seat.position.y=-.68;spinGroup.add(seat);
- let back=new THREE.Mesh(new THREE.BoxGeometry(.12,.95,.85),fabric);back.position.set(-.52,-.1,0);spinGroup.add(back);
- for(let i=0;i<5;i++){let a=i*Math.PI*2/5;rod([0,-1.42,0],[Math.cos(a)*.72,-1.42,Math.sin(a)*.72],.045,0x91a8bd);let caster=new THREE.Mesh(new THREE.SphereGeometry(.09,12,10),steel);caster.position.set(Math.cos(a)*.72,-1.48,Math.sin(a)*.72);spinGroup.add(caster)}
- let torso=new THREE.Mesh(new THREE.CapsuleGeometry(.28,.75,8,16),shirt);torso.position.y=.08;spinGroup.add(torso);let head=new THREE.Mesh(new THREE.SphereGeometry(.24,24,18),skin);head.position.y=.72;spinGroup.add(head);
- let legs=new THREE.Mesh(new THREE.BoxGeometry(.55,.18,.48),material(0x263b52));legs.position.set(.12,-.48,0);spinGroup.add(legs);
- for(let side of [-1,1]){let arm=new THREE.Group();arm.position.set(0,.35,0);spinGroup.add(arm);let upper=new THREE.Mesh(new THREE.CylinderGeometry(.09,.12,.48,16),shirt);upper.rotation.z=side*Math.PI/2;upper.position.x=side*.25;arm.add(upper);let fore=new THREE.Mesh(new THREE.CylinderGeometry(.075,.09,.42,16),shirt);fore.rotation.z=side*Math.PI/2;fore.position.x=side*.68;arm.add(fore);let weight=new THREE.Mesh(new THREE.SphereGeometry(.14,20,16),gold);arm.add(weight);spinArms.push({arm,side,weight});spinWeights.push(weight)}
- updateSpin();
+function updateViscosity(){
+ if(index!==3||!$('viscosityReadout'))return;
+ const d=viscosityData(),labels={honey:'Honey / शहद',water:'Water / पानी',oil:'Engine oil / इंजन ऑयल'};
+ $('fluidName').textContent=labels[d.type];
+ $('viscosityReadout').innerHTML='Coefficient of viscosity / श्यानता गुणांक: '+fmt(d.eta)+' Pa·s<br>Viscous force / श्यान बल: '+fmt(d.force)+' N<br>Velocity gradient / वेग प्रवणता: '+fmt(d.speed/d.gap)+' s⁻¹<br>Temperature / तापमान: '+d.temp+' °C';
+ const color=d.type==='honey'?0xffb52e:d.type==='water'?0x42c8ff:0xd6bd78;
+ fluidParticles.forEach(p=>{p.material.color.setHex(color);p.userData.trail.material.color.setHex(color)});
 }
-function spinInertia(){let r=+$('arm')?.value||1.2,m=+$('handMass')?.value||1;return .9+2*m*r*r}
-function updateSpin(){if(index!==2||!$('arm'))return;let r=+$('arm').value,m=+$('handMass').value,I=spinInertia(),omega=spinState.L/I;spinArms.forEach(({arm,side,weight})=>{arm.position.x=side*.16;arm.rotation.z=side*(r-1.2)*.12;weight.position.set(side*r,.0,0)});$('spinReadout').innerHTML='Moment of inertia / जड़त्व आघूर्ण: '+I.toFixed(3)+' kg·m²<br>Angular momentum / कोणीय संवेग: '+spinState.L.toFixed(2)+' kg·m²/s<br>Angular speed / कोणीय वेग: '+omega.toFixed(2)+' rad/s<br>External torque / बाहरी बल आघूर्ण: 0 N·m';}
-function stepSpin(dt){if(index!==2||!spinGroup||!$('arm'))return;spinGroup.rotation.y+=spinState.L/spinInertia()*dt;}
-
+function stepViscosity(dt){
+ if(index!==3||!fluidTopPlate)return;
+ fluidFlowTime+=dt;
+ const d=viscosityData();
+ // Deliberately amplified visual response: hotter/lower-viscosity fluid moves more visibly.
+ const tempFactor=0.65+((d.temp-10)/50)*1.5;
+ const fluidFactor=d.type==='honey'?.48:d.type==='oil'?.78:1.15;
+ const motionScale=tempFactor*fluidFactor*(.65+d.speed*.9);
+ fluidTopPlate.position.x=Math.sin(fluidFlowTime*2.8)*.34;
+ fluidTopPlate.position.z=Math.sin(fluidFlowTime*1.7)*.10;
+ fluidParticles.forEach(p=>{
+  const layer=(p.userData.row+1)/7;
+  const vx=(.45+layer*2.8)*motionScale;
+  p.position.x+=vx*dt;
+  if(p.position.x>1.85)p.position.x=-1.85;
+  p.position.y=-.66+p.userData.row*.25+Math.sin(fluidFlowTime*3+p.userData.col*.7)*.025;
+  p.position.z=.25*Math.sin(p.userData.col*1.7+fluidFlowTime*1.5);
+  p.userData.trail.position.copy(p.position);
+  p.userData.trail.position.x-=.12;
+  p.userData.trail.scale.x=.65+layer*.75;
+ }
+}
 function makeBicycle(){
  // Full bicycle side view; front wheel rotates around its hub.
  const frame=material(0x69d5ff),metal=material(0xc5d5e8),rubber=material(0x246b91),black=material(0x172536);
